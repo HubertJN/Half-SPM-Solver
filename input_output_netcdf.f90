@@ -320,16 +320,25 @@ contains
 
   !This subroutine opens an existing netcdf file named (file_name), and writes the integer 2D array (var), to the variable named (var_name) at position (it)
   !This should be used to write integer arrays (var), to a variable (var_name), with an infinite dimension, (var_len x undefined)
-  subroutine save_exp_int(var_name, var, file_name, it)
+  !if (act='new'), this assumes the variable doesn't already exist and will create an integer 2D array variable called (var_name), with shape (var_len x undefined), with units (units),...
+  !...and then write the 2D integer array (var) to this variable
+  subroutine save_exp_int(var_name, var, file_name, it, units, act)
     implicit none
 
-    character(len=*),    intent(in)         :: var_name, file_name
-    integer(kind=int32), intent(in)         :: var(:,:), it
+    character(len=*),    intent(in)           :: var_name, file_name
+    integer(kind=int32), intent(in)           :: var(:,:), it
+    character(len=*),    intent(in), optional :: units, act
 
-    integer(kind=int32)                     :: ierr, file_id
+    integer(kind=int32)                       :: ierr, file_id, var_len(2)
 
     ierr = nf90_open(file_name, NF90_WRITE, file_id)
     call error_check(ierr)
+
+    if (act == 'new') then
+       var_len = shape(var)
+       
+       call create_exp_var(var_name, nf90_int, var_len(1), file_id, units, act='add')
+    end if
 
     call assign_exp_int(var_name, var, file_id, it)
 
@@ -340,17 +349,26 @@ contains
 
   !This subroutine opens an existing netcdf file named (file_name), and writes the real 2D array (var), to the variable named (var_name) at position (it)
   !This should be used to write real arrays (var), to a variable (var_name), with an infinite dimension, (var_len x undefined)
-  subroutine save_exp_real(var_name, var, file_name, it)
+  !if (act='new'), this assumes the variable doesn't already exist and will create a real 2D array variable called (var_name), with shape (var_len x undefined), with units (units),...
+  !...and then write the 2D real array (var) to this variable
+  subroutine save_exp_real(var_name, var, file_name, it, units, act)
     implicit none
 
-    character(len=*),    intent(in)         :: var_name, file_name
-    real(kind=real64),   intent(in)         :: var(:,:)
-    integer(kind=int32), intent(in)         :: it
-
-    integer(kind=int32)                     :: ierr, file_id
+    character(len=*),    intent(in)           :: var_name, file_name
+    real(kind=real64),   intent(in)           :: var(:,:)
+    integer(kind=int32), intent(in)           :: it
+    character(len=*),    intent(in), optional :: units, act
+    
+    integer(kind=int32)                       :: ierr, file_id, var_len(2)
 
     ierr = nf90_open(file_name, NF90_WRITE, file_id)
     call error_check(ierr)
+
+    if (act == 'new') then
+       var_len = shape(var)
+       
+       call create_exp_var(var_name, nf90_double, var_len(1), file_id, units, act='add')
+    end if
 
     call assign_exp_real(var_name, var, file_id, it)
 
@@ -360,3 +378,5 @@ contains
   end subroutine save_exp_real
   
 end module input_output_netcdf
+
+!Need to modify assign_exp... to read as well for the checkpoint system, otherwise complete.

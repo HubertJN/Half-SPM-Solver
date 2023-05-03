@@ -17,13 +17,13 @@ MODULE pde_solver
     !dif_coef - the diffusion coefficient
     !flux_param - equals to iapp/(aFL), needs to be calculated beforehand!
     !dt - the timestep
-    !c_cur - the current concentration vector 
+    !c_cur - the current concentration vector in in out
     
     REAL(REAL64), INTENT(IN) :: rad, dif_coef, flux_param, dt
     REAL(REAL64), DIMENSION(:), INTENT(IN) :: c_cur
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE, INTENT(OUT) :: crank_nicholson
+    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: crank_nicholson
     REAL(REAL64), DIMENSION(:,:), ALLOCATABLE :: B                              !evolution matrix
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: AL, A, AU, rhs		        !lhs and rhs of equation
+    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: AL, A, AU, rhs                   !lhs and rhs of equation
     REAL(REAL64) :: dr, ri, ai                                                  !spacestep, current radius, parameter
     INTEGER :: i                                                                !loop variables
     INTEGER :: n, info                                                          !size of array and dgtsv info
@@ -75,7 +75,7 @@ MODULE pde_solver
     AU = 0.0_REAL64
     B = 0.0_REAL64
     rhs = 0.0_REAL64
-    crank_nicholson = 0.0_REAL64
+    !crank_nicholson = 0.0_REAL64
     
     !calculate space-step and evolution parameter
     dr = rad/(REAL(n-1, KIND=REAL64))
@@ -142,7 +142,7 @@ MODULE pde_solver
     !Outputs U(c)
     
     REAL(REAL64), INTENT(IN) :: x
-    REAL(REAL64), INTENT(OUT) :: U_scalar
+    REAL(REAL64) :: U_scalar
     
     !U+ implemented (U- can be implemented later if needed)
     U_scalar = -0.8090_REAL64*x + 4.4875_REAL64 - 0.0428_REAL64*TANH(18.5138_REAL64*(x-0.5542_REAL64)) &
@@ -158,7 +158,7 @@ MODULE pde_solver
     !Outputs U(c) as 1D array
     
     REAL(REAL64), DIMENSION(:), INTENT(IN) :: x
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE, INTENT(OUT) :: U_arr
+    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: U_arr
     INTEGER :: size_arr
     
     IF(ALLOCATED(U_arr)) THEN
@@ -193,7 +193,7 @@ MODULE pde_solver
     !TODO: Neaten up (prevent writing so many params, maybe incorporate into module itself?)
     REAL(REAL64), INTENT(IN) :: cin, Rg, T, F, iapp, a, L, K, cmax
     REAL(REAL64) :: arsinh
-    REAL(REAL64), INTENT(OUT) :: volt_scalar 
+    REAL(REAL64) :: volt_scalar 
     
     !Calculates arsinh part
     arsinh = F*K*SQRT((cin/cmax)*(1.0_REAL64 - cin/cmax))          !jc
@@ -215,7 +215,7 @@ MODULE pde_solver
     REAL(REAL64), DIMENSION(:), INTENT(IN) :: arrin
     REAL(REAL64), INTENT(IN) :: Rg, T, F, iapp, a, L, K, cmax
     REAL(REAL64), DIMENSION(:), ALLOCATABLE :: arsinh
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE, INTENT(OUT) :: volt_array 
+    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: volt_array 
     INTEGER :: size_arr
     
     IF (ALLOCATED(volt_array)) THEN

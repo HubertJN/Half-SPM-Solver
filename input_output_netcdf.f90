@@ -10,9 +10,9 @@ module input_output_netcdf
   real(kind=Real64), parameter :: farad = 96485.3321233100184_DP !C/mol
   real(kind=Real64), parameter :: gas_con = 8.31446261815324_DP !J/(K.mol)
   
-  real(kind=Real64)            :: temp, rad, thick, rr_coef, dif_coef
-  real(kind=Real64)            :: init_c, max_c, c_rate
-  integer(kind=int32)          :: sim_steps, out_steps
+  real(kind=Real64)            :: temp, rad, thick, rr_coef, dif_coef, area
+  real(kind=Real64)            :: init_c, max_c, c_rate, dt, vol_perc
+  integer(kind=int32)          :: sim_steps, out_steps, space_steps
   
 contains
 
@@ -128,14 +128,28 @@ contains
   !This subroutine creates a single value variable called (var_name), with data type (var_typ (f90_int or f90_double)), in a netcdf file with id (file_id)
   !You can optionally prescribe units to the variable (units)
   !If the file is NOT in definition mode, so already exists, you can use (act='add') to add the variable to an existing netcdf file with id (file_id)
-  subroutine create_sing_var(var_name, var_typ, file_id, units, act)
+  !Or if you want to create a single variable mid prgram, you can input the file_name
+  subroutine create_sing_var(var_name, var_typ, file_id_in, units, act, file_name)
     implicit none
 
-    integer(kind=int32), intent(in)           :: file_id, var_typ
-    character(len=*),    intent(in)           :: var_name
-    character(len=*),    intent(in), optional :: act, units
+    integer(kind=int32), intent(in)              :: var_typ
+    integer(kind=int32), intent(inout), optional :: file_id_in
+    character(len=*),    intent(in)              :: var_name
+    character(len=*),    intent(in),    optional :: act, units, file_name
 
-    integer(kind=int32)                       :: ierr, dim_id, var_id
+    integer(kind=int32)                          :: ierr, dim_id, var_id, file_id
+
+    if ((present(file_id_in) .eqv. .false.) .and. (present(file_name) .eqv. .false.)) then
+       print*, 'Need file_id or file_name to create variable'
+       error stop
+    end if
+
+    if (present(file_name)) then
+       ierr = nf90_open(file_name, NF90_WRITE, file_id)
+       call error_check(ierr)
+    else
+       file_id = file_id_in
+    end if
 
     if (act == 'add') then
        ierr = nf90_redef(file_id)
@@ -157,21 +171,40 @@ contains
        ierr = nf90_enddef(file_id)
        call error_check(ierr)
     end if
+
+    if (present(file_name)) then
+       ierr = nf90_close(file_id)
+       call error_check(ierr)
+    end if
     
   end subroutine create_sing_var
 
   !This subroutine creates an expanding variable called (var_name), with dimension (var_len x undefined), and with data type (var_typ (f90_int or f90_double)), in a netcdf file with id (file_id)
   !You can optionally prescribe units to the variable (units)
   !If the file is NOT in definition mode, so already exists, you can use (act='add') to add the variable to an existing netcdf file with id (file_id)
-  subroutine create_exp_var(var_name, var_typ, var_len, file_id, units, act)
+  !Or if you want to create a single variable mid prgram, you can input the file_name
+  subroutine create_exp_var(var_name, var_typ, var_len, file_id_in, units, act, file_name)
     implicit none
 
-    integer(kind=int32), intent(in)           :: file_id, var_typ, var_len
-    character(len=*),    intent(in)           :: var_name
-    character(len=*),    intent(in), optional :: act, units
+    integer(kind=int32), intent(in)              :: var_typ, var_len
+    integer(kind=int32), intent(in),    optional :: file_id_in
+    character(len=*),    intent(in)              :: var_name
+    character(len=*),    intent(in),    optional :: act, units, file_name
 
-    integer(kind=int32)                       :: ierr, dim_id(2), var_id
+    integer(kind=int32)                          :: ierr, dim_id(2), var_id, file_id
 
+    if ((present(file_id_in) .eqv. .false.) .and. (present(file_name) .eqv. .false.)) then
+       print*, 'Need file_id or file_name to create variable'
+       error stop
+    end if
+
+    if (present(file_name)) then
+       ierr = nf90_open(file_name, NF90_WRITE, file_id)
+       call error_check(ierr)
+    else
+       file_id = file_id_in
+    end if
+    
     if (act == 'add') then
        ierr = nf90_redef(file_id)
        call error_check(ierr)
@@ -193,6 +226,11 @@ contains
 
     if (act == 'add') then
        ierr = nf90_enddef(file_id)
+       call error_check(ierr)
+    end if
+
+    if (present(file_name)) then
+       ierr = nf90_close(file_id)
        call error_check(ierr)
     end if
 
@@ -252,25 +290,16 @@ contains
 
   !This subroutine opens an existing netcdf file named (file_name), and writes the integer 2D array (var), to the variable named (var_name) at position (it)
   !This should be used to write integer arrays (var), to a variable (var_name), with an infinite dimension, (var_len x undefined)
-  !if (act='new'), this assumes the variable doesn't already exist and will create an integer 2D array variable called (var_name), with shape (var_len x undefined), with units (units),...
-  !...and then write the 2D integer array (var) to this variable
-  subroutine save_exp_int(var_name, var, file_name, it, units, act)
+  subroutine save_exp_int(var_name, var, file_name, it)
     implicit none
 
     character(len=*),    intent(in)           :: var_name, file_name
     integer(kind=int32), intent(in)           :: var(:,:), it
-    character(len=*),    intent(in), optional :: units, act
 
     integer(kind=int32)                       :: ierr, file_id, var_len(2)
 
     ierr = nf90_open(file_name, NF90_WRITE, file_id)
     call error_check(ierr)
-
-    if (act == 'new') then
-       var_len = shape(var)
-       
-       call create_exp_var(var_name, nf90_int, var_len(1), file_id, units, act='add')
-    end if
 
     call assign_exp_int(var_name, var, file_id, it)
 
@@ -283,24 +312,17 @@ contains
   !This should be used to write real arrays (var), to a variable (var_name), with an infinite dimension, (var_len x undefined)
   !if (act='new'), this assumes the variable doesn't already exist and will create a real 2D array variable called (var_name), with shape (var_len x undefined), with units (units),...
   !...and then write the 2D real array (var) to this variable
-  subroutine save_exp_real(var_name, var, file_name, it, units, act)
+  subroutine save_exp_real(var_name, var, file_name, it)
     implicit none
 
     character(len=*),    intent(in)           :: var_name, file_name
     real(kind=real64),   intent(in)           :: var(:,:)
     integer(kind=int32), intent(in)           :: it
-    character(len=*),    intent(in), optional :: units, act
     
     integer(kind=int32)                       :: ierr, file_id, var_len(2)
 
     ierr = nf90_open(file_name, NF90_WRITE, file_id)
     call error_check(ierr)
-
-    if (act == 'new') then
-       var_len = shape(var)
-       
-       call create_exp_var(var_name, nf90_double, var_len(1), file_id, units, act='add')
-    end if
 
     call assign_exp_real(var_name, var, file_id, it)
 
@@ -310,29 +332,54 @@ contains
   end subroutine save_exp_real
 
   !This subroutine opens the netcdf file with name (file_name), reads the input values, writes them to global variables, and closes the file
-  subroutine import_input(file_name)
+  subroutine import_input(file_name, act)
     implicit none
 
-    character(len=*), intent(in) :: file_name
+    character(len=*), intent(in), optional :: file_name
+    logical,          intent(in), optional :: act
     
-    integer(kind=int32)          :: ierr, file_id, var_id
+    integer(kind=int32)                    :: ierr, file_id, var_id
+
+    if (present(file_name) .and. (act .eqv. .False.)) then
     
     ierr = nf90_open(file_name, NF90_NOWRITE, file_id)
     call error_check(ierr)
 
-    call assign_int('sim_steps', sim_steps, file_id, 'r')
-    call assign_int('out_steps', out_steps, file_id, 'r')
-    call assign_real('temp',          temp, file_id, 'r')
-    call assign_real('rad',            rad, file_id, 'r')
-    call assign_real('thick',        thick, file_id, 'r')
-    call assign_real('rr_coef',    rr_coef, file_id, 'r')
-    call assign_real('dif_coef',  dif_coef, file_id, 'r')
-    call assign_real('init_c',      init_c, file_id, 'r')
-    call assign_real('max_c',        max_c, file_id, 'r')
-    call assign_real('c_rate',      c_rate, file_id, 'r')
+    call assign_int('sim_steps',     sim_steps, file_id, 'r')
+    call assign_int('out_steps',     out_steps, file_id, 'r')
+    call assign_int('space_steps', space_steps, file_id, 'r')
+    call assign_real('temp',              temp, file_id, 'r')
+    call assign_real('rad',                rad, file_id, 'r')
+    call assign_real('thick',            thick, file_id, 'r')
+    call assign_real('rr_coef',        rr_coef, file_id, 'r')
+    call assign_real('dif_coef',      dif_coef, file_id, 'r')
+    call assign_real('init_c',          init_c, file_id, 'r')
+    call assign_real('max_c',            max_c, file_id, 'r')
+    call assign_real('c_rate',          c_rate, file_id, 'r')
+    call assign_real('dt',                  dt, file_id, 'r')
+    call assign_real('vol_perc',      vol_perc, file_id, 'r')
+    call assign_real('area',              area, file_id, 'r')
+    
     
     ierr = nf90_close(file_id)
     call error_check(ierr)
+
+    else
+       sim_steps = 1000
+       out_steps = 5
+       space_steps = 20 
+       temp = 294.15_DP
+       rad = 5.22e-6_DP
+       thick = 75.6e-6_DP
+       rr_coef = 3.42_DP
+       dif_coef = 1.48e-15_DP
+       init_c = 51765.0_DP
+       max_c = 51765.0_DP
+       c_rate = 0.001_DP
+       dt = 2e-9_DP
+       vol_perc = 66.5_DP
+       area = 0.1027_DP
+    end if
     
   end subroutine import_input
 
@@ -344,33 +391,43 @@ contains
 
     integer(kind=int32)          :: ierr, file_id
     
-    ierr = nf90_create(file_name, nf90_clobber, file_id)
+    ierr = nf90_create(file_name, nf90_netcdf4, file_id)
     call error_check(ierr)
 
-    call create_sing_var('sim_steps', nf90_int,    file_id)
-    call create_sing_var('out_steps', nf90_int,    file_id)
-    call create_sing_var('temp',      nf90_double, file_id, 'K')
-    call create_sing_var('rad',       nf90_double, file_id, 'm')
-    call create_sing_var('thick',     nf90_double, file_id, 'm')
-    call create_sing_var('rr_coef',   nf90_double, file_id)
-    call create_sing_var('dif_coef',  nf90_double, file_id)
-    call create_sing_var('init_c',    nf90_double, file_id)
-    call create_sing_var('max_c',     nf90_double, file_id)
-    call create_sing_var('c_rate',    nf90_double, file_id)
+    call create_sing_var('sim_steps',   nf90_int,    file_id)
+    call create_sing_var('out_steps',   nf90_int,    file_id)
+    call create_sing_var('space_steps', nf90_int,    file_id)
+    call create_sing_var('temp',        nf90_double, file_id, 'K')
+    call create_sing_var('rad',         nf90_double, file_id, 'm')
+    call create_sing_var('thick',       nf90_double, file_id, 'm')
+    call create_sing_var('rr_coef',     nf90_double, file_id, '$Am^{-2}(m^3mol^{-1})^{1.5}$')
+    call create_sing_var('dif_coef',    nf90_double, file_id, '$10^{-15} m^2 s^{-1}$')
+    call create_sing_var('init_c',      nf90_double, file_id, '$mol m^{-3}$')
+    call create_sing_var('max_c',       nf90_double, file_id, '$mol m^{-3}$')
+    call create_sing_var('c_rate',      nf90_double, file_id, 'A/s')
+    call create_sing_var('dt',          nf90_double, file_id, 's')
+    call create_sing_var('vol_perc',    nf90_double, file_id, '%')
+    call create_sing_var('area',        nf90_double, file_id, '$m^2$')
+
+    call create_exp_var('conc', nf90_real, space_steps, file_id, '$mol m^{-3}$')
 
     ierr = nf90_enddef(file_id)
     call error_check(ierr)
 
-    call assign_int('sim_steps', sim_steps, file_id, 'w')
-    call assign_int('out_steps', out_steps, file_id, 'w')
-    call assign_real('temp',          temp, file_id, 'w')
-    call assign_real('rad',            rad, file_id, 'w')
-    call assign_real('thick',        thick, file_id, 'w')
-    call assign_real('rr_coef',    rr_coef, file_id, 'w')
-    call assign_real('dif_coef',  dif_coef, file_id, 'w')
-    call assign_real('init_c',      init_c, file_id, 'w')
-    call assign_real('max_c',        max_c, file_id, 'w')
-    call assign_real('c_rate',      c_rate, file_id, 'w')
+    call assign_int('sim_steps',     sim_steps, file_id, 'w')
+    call assign_int('out_steps',     out_steps, file_id, 'w')
+    call assign_int('space_steps', space_steps, file_id, 'w')
+    call assign_real('temp',              temp, file_id, 'w')
+    call assign_real('rad',                rad, file_id, 'w')
+    call assign_real('thick',            thick, file_id, 'w')
+    call assign_real('rr_coef',        rr_coef, file_id, 'w')
+    call assign_real('dif_coef',      dif_coef, file_id, 'w')
+    call assign_real('init_c',          init_c, file_id, 'w')
+    call assign_real('max_c',            max_c, file_id, 'w')
+    call assign_real('c_rate',          c_rate, file_id, 'w')
+    call assign_real('dt',                  dt, file_id, 'w')
+    call assign_real('vol_perc',      vol_perc, file_id, 'w')
+    call assign_real('area',              area, file_id, 'w')
 
     ierr = nf90_close(file_id)
     call error_check(ierr)

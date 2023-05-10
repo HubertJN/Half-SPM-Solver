@@ -15,8 +15,8 @@ test.out: $(object)
 
 clean:
 	rm -f *.o *.mod $(exe)
-	rm test.nc
-	rm test.chp
+	rm SP_output.nc
+	rm SP_check.chp
 
 %.o: %.f90
 	$(compiler) $(flags) -c $< $(libraries) -o $@

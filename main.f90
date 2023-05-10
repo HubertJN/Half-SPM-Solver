@@ -23,15 +23,15 @@ PROGRAM main
   !Time loop (propagate+voltage+write)
   
   !temporary
-  CHARACTER(LEN=7) :: loadname = "test.nc", outname = "tout.nc"
+  CHARACTER(LEN=12) :: loadname = "SPM_input.nc", outname = "SP_output.nc", checkname='SP_check.chp'
   REAL(REAL64) :: a, iapp, flux_param
-  REAL(REAL64), DIMENSION(:,:), ALLOCATABLE :: conc
-  REAL(REAL64), DIMENSION(:), ALLOCATABLE :: c_tmp, volt
-  INTEGER :: i, j, quo
-  LOGICAL :: test, volt_do                                        !test - default or not; voltage calcs or not
+  REAL(REAL64), ALLOCATABLE :: conc(:,:)
+  REAL(REAL64), ALLOCATABLE :: c_tmp(:), volt(:,:)
+  INTEGER :: i, j, quo, step_prog
+  LOGICAL :: checkpoint = .False., volt_do= .False.                                        !test - default or not; voltage calcs or not
   
   !Import file and initialise mesh
-  CALL import_input(loadname,test)
+  CALL import_input(loadname)
   
   !allocate
   IF (ALLOCATED(conc)) THEN
@@ -51,44 +51,59 @@ PROGRAM main
   
   conc = -1.0_REAL64
   volt_do = .FALSE.
-  quo = CEILING(sim_steps/out_steps) 
+  quo = CEILING(real(sim_steps, kind=real64)/real(out_steps, kind=real64)) 
   
   !initial conditions and derived parameters
-  c_tmp = init_c
-  a = 3.0_REAL64*vol_perc/(100.0_REAL64*rad)
+  if (checkpoint .eqv. .True.) then
+     call load_checkp(checkname, c_tmp)
+  else
+     call initiate_file(outname)
+     call initiate_checkp(checkname)
+     
+     c_tmp = init_c
+  end if
+  
+  a = 3.0_REAL64*vol_per/(100.0_REAL64*rad)
   iapp = c_rate*dt/area
   flux_param = iapp/(a*farad*thick)
-  
   
   IF (.NOT. volt_do) THEN
     
     !loop to evolve
-    DO i = 1:quo
-      DO j = 1:out_steps
+    DO i = 1, quo
+      DO j = 1, out_steps
         c_tmp = crank_nicholson(rad,dif_coef,flux_param,dt,c_tmp)
         conc(:,j) = c_tmp
       END DO
       
       !save
-      CALL save_exp_real('conc',conc,outname,(i-1)*out_steps+1)
+      step_prog = ((i-1)*out_steps+1)
+      CALL save_exp_real('conc', conc, outname, step_prog)
+      call update_checkp(checkname, conc(:,out_steps), step_prog)
     END DO
     
   ELSE
     !include voltage calcs
-    ALLOCATE(volt(out_steps))
+     ALLOCATE(volt(1, out_steps))
+     
+     if (checkpoint .eqv. .False.) then
+        call create_exp_var('volt', nf90_double, 1, units='V', act='add', file_name=outname)
+     end if
     
-    DO i = 1:quo
-      DO j = 1:out_steps
+    DO i = 1, quo
+      DO j = 1, out_steps
         c_tmp = crank_nicholson(rad,dif_coef,flux_param,dt,c_tmp)
         conc(:,j) = c_tmp
       END DO
       
       !Actual calculation
-      volt = volt_calc(conc(space_steps,:), gas_con, temp, farad, iapp, a, thick, rr_coef, max_c)
+      volt(1,:) = volt_calc(conc(space_steps,:), gas_con, temp, farad, iapp, a, thick, rr_coef, max_c)
       
       !save
-      CALL save_exp_real('conc',conc,outname,(i-1)*out_steps+1)
-      CALL save_exp_real('volt',volt,outname,(i-1)*out_steps+1)
+      step_prog = ((i-1)*out_steps+1)
+      CALL save_exp_real('conc', conc, outname, step_prog)
+      CALL save_exp_real('volt', volt, outname, step_prog)
+      call update_checkp(checkname, conc(:,out_steps), step_prog)
     END DO
     
   END IF

@@ -2,6 +2,7 @@ PROGRAM main
 
   USE ISO_FORTRAN_ENV
   USE pde_solver
+  use fd_solver
   USE input_output_netcdf
   
   IMPLICIT NONE
@@ -60,7 +61,10 @@ PROGRAM main
      call initiate_file(outname)
      call initiate_checkp(checkname)
      
-     c_tmp = init_c
+     !c_tmp = init_c
+     c_tmp = 0.0_DP
+     c_tmp(1) = init_c
+     c_tmp(20) = init_c
   end if
   
   a = 3.0_REAL64*vol_per/(100.0_REAL64*rad)
@@ -72,8 +76,10 @@ PROGRAM main
     !loop to evolve
     DO i = 1, quo
       DO j = 1, out_steps
-        c_tmp = crank_nicholson(rad,dif_coef,flux_param,dt,c_tmp)
-        conc(:,j) = c_tmp
+         c_tmp = crank_nicholson(rad,dif_coef,flux_param,dt,c_tmp)
+         !c_tmp = fd(rad,dif_coef,flux_param,dt,c_tmp)
+         conc(:,j) = c_tmp
+         print*, c_tmp(1), c_tmp(5), c_tmp(10), c_tmp(15), c_tmp(20)
       END DO
       
       !save

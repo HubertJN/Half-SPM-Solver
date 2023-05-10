@@ -8,7 +8,7 @@ main=main.f90
 
 exe=test.out
 
-object=input_output_netcdf.o pde.o
+object=input_output_netcdf.o fd.o pde.o
 
 test.out: $(object)
 	$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)

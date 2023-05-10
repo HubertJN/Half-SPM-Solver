@@ -523,6 +523,8 @@ contains
 
     ierr = nf90_close(file_id)
     call error_check(ierr)
+
+    tot_steps = 0
     
   end subroutine initiate_checkp
 
@@ -554,18 +556,19 @@ contains
     
     character(len=*),    intent(in)    :: file_name
     real(kind=real64),   intent(inout) :: conc(:)
-    integer(kind=int32), intent(inout)    :: step_num
+    integer(kind=int32), intent(inout) :: step_num
 
-    integer(kind=int32)                :: ierr, file_id
+    integer(kind=int32)                :: ierr, file_id, steps
     real(kind=real64)                  :: time
 
     ierr = nf90_open(file_name, NF90_WRITE, file_id)
     call error_check(ierr)
 
     time = (step_num * dt) + final_time
+    steps = tot_steps + step_num
     call assign_real('time', file_id, 'w', sing=time)
     call assign_real('conc', file_id, 'w', vect=conc)
-    call assign_int('tot_steps', file_id, 'w', sing=step_num)
+    call assign_int('tot_steps', file_id, 'w', sing=steps)
 
     ierr = nf90_close(file_id)
     call error_check(ierr)

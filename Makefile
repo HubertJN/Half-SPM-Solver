@@ -2,19 +2,21 @@ compiler=gfortran #-Wall -Wextra
 
 flags=`nf-config --fflags`
 
-libraries=`nf-config --flibs`
+libraries=`nf-config --flibs` -llapack
 
-inp=prog.f90
+main=main.f90
 
 exe=test.out
 
-object=input_output_netcdf.o
+object=input_output_netcdf.o pde.o
 
 test.out: $(object)
-	$(compiler) $(flags) $(inp) $(libraries) -o $(exe) $(object)
+	$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
 
 clean:
 	rm -f *.o *.mod $(exe)
+	rm test.nc
+	rm test.chp
 
-input_output_netcdf.o:
-	$(compiler) $(flags) $(libraries) input_output_netcdf.f90 -c -o $@ $<
+%.o: %.f90
+	$(compiler) $(flags) -c $< $(libraries) -o $@

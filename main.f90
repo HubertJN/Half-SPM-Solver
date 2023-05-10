@@ -51,7 +51,6 @@ PROGRAM main
   
   conc = -1.0_REAL64
   volt_do = .FALSE.
-  
   quo = CEILING(real(sim_steps, kind=real64)/real(out_steps, kind=real64)) 
   
   !initial conditions and derived parameters
@@ -81,7 +80,6 @@ PROGRAM main
       step_prog = ((i-1)*out_steps+1)
       CALL save_exp_real('conc', conc, outname, step_prog)
       call update_checkp(checkname, conc(:,out_steps), step_prog)
-
     END DO
     
   ELSE

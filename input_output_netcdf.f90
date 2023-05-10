@@ -415,7 +415,6 @@ contains
     call assign_real('vol_per',    file_id, 'r', sing=vol_per)
     call assign_real('area',       file_id, 'r', sing=area)
     
-    
     ierr = nf90_close(file_id)
     call error_check(ierr)
 

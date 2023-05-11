@@ -13,6 +13,7 @@ module input_output_netcdf
   real(kind=Real64)            :: temp, rad, thick, rr_coef, dif_coef, area
   real(kind=Real64)            :: init_c, max_c, c_rate, dt, vol_per, final_time
   integer(kind=int32)          :: sim_steps, out_steps, space_steps, tot_steps
+  integer(kind=int32)          :: output_id, input_id, checkp_id
   
 contains
 
@@ -464,7 +465,7 @@ contains
     call create_sing_var('vol_per',     nf90_double, 1, file_id, '%')
     call create_sing_var('area',        nf90_double, 1, file_id, '$m^2$')
 
-    call create_exp_var('conc', nf90_real, space_steps, file_id, '$mol m^{-3}$')
+    call create_exp_var('conc', nf90_double, space_steps, file_id, '$mol m^{-3}$')
 
     ierr = nf90_enddef(file_id)
     call error_check(ierr)

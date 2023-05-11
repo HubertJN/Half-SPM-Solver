@@ -29,7 +29,7 @@ PROGRAM main
   REAL(REAL64), ALLOCATABLE :: conc(:,:)
   REAL(REAL64), ALLOCATABLE :: c_tmp(:), volt(:,:)
   INTEGER :: i, j, quo, step_prog
-  LOGICAL :: checkpoint = .False., volt_do= .False.                                        !test - default or not; voltage calcs or not
+  LOGICAL :: checkpoint = .False., volt_do= .True.                                        !test - default or not; voltage calcs or not
   
   !Import file and initialise mesh
   CALL import_input(loadname)
@@ -51,7 +51,6 @@ PROGRAM main
   ALLOCATE(c_tmp(space_steps))
   
   conc = -1.0_REAL64
-  volt_do = .FALSE.
   quo = CEILING(real(sim_steps, kind=real64)/real(out_steps, kind=real64)) 
   
   !initial conditions and derived parameters
@@ -61,17 +60,17 @@ PROGRAM main
      call initiate_file(outname)
      call initiate_checkp(checkname)
      
-     !c_tmp = init_c
-     c_tmp = 0.0_DP
-     c_tmp(1) = init_c
-     c_tmp(20) = init_c
+     c_tmp = init_c
+     !c_tmp = 0.0_DP
+     !c_tmp(1) = init_c
+     !c_tmp(20) = init_c
   end if
   
   a = 3.0_REAL64*vol_per/(100.0_REAL64*rad)
   iapp = c_rate*dt/area
   flux_param = iapp/(a*farad*thick)
   
-  IF (.NOT. volt_do) THEN
+  IF (volt_do .eqv. .False.) THEN
     
     !loop to evolve
     DO i = 1, quo
@@ -79,7 +78,7 @@ PROGRAM main
          c_tmp = crank_nicholson(rad,dif_coef,flux_param,dt,c_tmp)
          !c_tmp = fd(rad,dif_coef,flux_param,dt,c_tmp)
          conc(:,j) = c_tmp
-         print*, c_tmp(1), c_tmp(5), c_tmp(10), c_tmp(15), c_tmp(20)
+         !print*, c_tmp(1), c_tmp(5), c_tmp(10), c_tmp(15), c_tmp(20)
       END DO
       
       !save
@@ -98,7 +97,8 @@ PROGRAM main
     
     DO i = 1, quo
       DO j = 1, out_steps
-        c_tmp = crank_nicholson(rad,dif_coef,flux_param,dt,c_tmp)
+         c_tmp = crank_nicholson(rad,dif_coef,flux_param,dt,c_tmp)
+         !c_tmp = fd(rad,dif_coef,flux_param,dt,c_tmp)
         conc(:,j) = c_tmp
       END DO
       

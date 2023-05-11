@@ -28,7 +28,7 @@ PROGRAM main
   REAL(REAL64) :: a, iapp, flux_param
   REAL(REAL64), ALLOCATABLE :: conc(:,:)
   REAL(REAL64), ALLOCATABLE :: c_tmp(:), volt(:,:)
-  INTEGER :: i, j, quo, step_prog
+  INTEGER :: i, j, quo, step_prog, ierr
   LOGICAL :: checkpoint = .False., volt_do= .True.                                        !test - default or not; voltage calcs or not
   
   !Import file and initialise mesh
@@ -83,8 +83,8 @@ PROGRAM main
       
       !save
       step_prog = ((i-1)*out_steps+1)
-      CALL save_exp_real('conc', conc, outname, step_prog)
-      call update_checkp(checkname, conc(:,out_steps), step_prog)
+      CALL assign_exp_real('conc', conc, output_id, step_prog)
+      call update_checkp(conc(:,out_steps), step_prog)
     END DO
     
   ELSE
@@ -92,7 +92,7 @@ PROGRAM main
      ALLOCATE(volt(1, out_steps))
      
      if (checkpoint .eqv. .False.) then
-        call create_exp_var('volt', nf90_double, 1, units='V', act='add', file_name=outname)
+        call create_exp_var('volt', nf90_double, 1, output_id, units='V', act='add')
      end if
     
     DO i = 1, quo
@@ -107,13 +107,13 @@ PROGRAM main
       
       !save
       step_prog = ((i-1)*out_steps+1)
-      CALL save_exp_real('conc', conc, outname, step_prog)
-      CALL save_exp_real('volt', volt, outname, step_prog)
-      call update_checkp(checkname, conc(:,out_steps), step_prog)
+      CALL assign_exp_real('conc', conc, output_id, step_prog)
+      CALL assign_exp_real('volt', volt, output_id, step_prog)
+      call update_checkp(conc(:,out_steps), step_prog)
     END DO
     
   END IF
-    
+    call fin_in_out()
 
 
 END PROGRAM main

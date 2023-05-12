@@ -17,13 +17,11 @@ exe=test.out
 object=input_output_netcdf.o fd.o pde.o
 
 
-
 #Compile line
 test.out: $(object)
 	$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
 	
 	
-
 #Checking if object files created 
 ifeq ("$(wildcard $(./fd.o))","")
 	@echo "FD solver ready"

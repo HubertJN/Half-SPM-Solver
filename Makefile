@@ -18,5 +18,8 @@ clean:
 	rm SP_output.nc
 	rm SP_check.chp
 
+checkpoint:
+	rm -f *.o *.mod $(exe)
+
 %.o: %.f90
 	$(compiler) $(flags) -c $< $(libraries) -o $@

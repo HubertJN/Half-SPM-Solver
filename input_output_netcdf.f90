@@ -14,6 +14,7 @@ module input_output_netcdf
   real(kind=Real64)            :: init_c, max_c, c_rate, dt, vol_per, final_time
   integer(kind=int32)          :: sim_steps, out_steps, space_steps, tot_steps
   integer(kind=int32)          :: output_id, check_id
+  integer(kind=int32)          :: volt_out_id, conc_out_id, conc_check_id, time_check_id, ts_check_id
   
 contains
 
@@ -32,20 +33,32 @@ contains
   end subroutine error_check
 
   !This subroutine reads (act=r) or writes (act=w) a single integer (sing) or a vector (vect), from/to a variable with name (var_name) in a NetCDF file with id (file_id)
-  subroutine assign_int(var_name, file_id, act, vect, sing)
+  subroutine assign_int(file_id, act, vect, sing, var_name, var_id_in, var_id_out)
     implicit none
 
-    character(len=*),    intent(in)              :: var_name, act
+    character(len=*),    intent(in)              :: act
     integer(kind=int32), intent(in)              :: file_id
+    character(len=*),    intent(in), optional    :: var_name
+    integer(kind=int32), intent(in), optional    :: var_id_in
+    integer(kind=int32), intent(out), optional   :: var_id_out
     
-    integer(kind=int32), intent(inout), optional :: vect(:)
-    integer(kind=int32), intent(inout), optional :: sing
+    integer(kind=int32), intent(inout), optional :: sing, vect(:)
 
     integer(kind=int32)                          :: var_id, ierr
 
-    ierr = nf90_inq_varid(file_id, var_name, var_id)
-    if (ierr /= nf90_noerr) print*, var_name
-    call error_check(ierr)
+    if (present(var_name)) then
+       ierr = nf90_inq_varid(file_id, var_name, var_id)
+       if (ierr /= nf90_noerr) print*, var_name
+       call error_check(ierr)
+       
+    else
+       var_id = var_id_in
+       
+    end if
+
+    if (present(var_id_out)) then
+       var_id_out = var_id
+    end if
 
     if (act == 'r') then
        if (present(vect)) then
@@ -82,21 +95,32 @@ contains
   end subroutine assign_int
 
   !This subroutine reads (act=r) or writes (act=w) a single real number (sing) or vector (vect), from/to a variable with name (var_name) in a NetCDF file with id (file_id)
-  subroutine assign_real(var_name, file_id, act, vect, sing)
+  subroutine assign_real(file_id, act, vect, sing, var_name, var_id_in, var_id_out)
     implicit none
 
-    character(len=*),    intent(in)              :: var_name, act
+    character(len=*),    intent(in)              :: act
     integer(kind=int32), intent(in)              :: file_id
-    
-    real(kind=real64),   intent(inout), optional :: vect(:)
-    real(kind=real64),   intent(inout), optional :: sing
+    character(len=*),    intent(in),    optional :: var_name
+    integer(kind=int32), intent(in),    optional :: var_id_in
+    integer(kind=int32), intent(out),   optional :: var_id_out
+    real(kind=real64),   intent(inout), optional :: sing, vect(:)
 
     integer(kind=int32)                          :: var_id, ierr
 
-    ierr = nf90_inq_varid(file_id, var_name, var_id)
-    if (ierr /= 0) print*, var_name
-    call error_check(ierr)
+    if (present(var_name)) then
+       ierr = nf90_inq_varid(file_id, var_name, var_id)
+       if (ierr /= nf90_noerr) print*, var_name
+       call error_check(ierr)
 
+    else
+       var_id = var_id_in
+       
+    end if
+
+    if (present(var_id_out)) then
+       var_id_out = var_id
+    end if
+    
     if (act == 'r') then
        if (present(vect)) then
           ierr = nf90_get_var(file_id, var_id, vect)
@@ -131,20 +155,27 @@ contains
 
   !This subroutine writes the integer 2D array (var), to the variable named (var_name), in the netcdf file with id (file_id), at position (it)
   !This should be used to write integer arrays (var), to a variable (var_name), with an infinite dimension, (var_len x undefined)
-  subroutine assign_exp_int(var_name, var, file_id, it)
+  subroutine assign_exp_int(var, file_id, it, var_name, var_id_in)
     implicit none
 
-    character(len=*),    intent(in)    :: var_name
+    character(len=*),    intent(in), optional    :: var_name
+    integer(kind=int32), intent(in), optional    :: var_id_in
     integer(kind=int32), intent(in)    :: file_id, it
     
     integer(kind=int32), intent(in)    :: var(:,:)
 
     integer(kind=int32)                :: var_id, ierr
 
-    ierr = nf90_inq_varid(file_id, var_name, var_id)
-    if (ierr /= 0) print*, var_name
-    call error_check(ierr)
-
+    if (present(var_name)) then
+       ierr = nf90_inq_varid(file_id, var_name, var_id)
+       if (ierr /= nf90_noerr) print*, var_name
+       call error_check(ierr)
+       
+    else
+       var_id = var_id_in
+       
+    end if
+    
     ierr = nf90_put_var(file_id, var_id, var, (/1,it/))
     call error_check(ierr)
 
@@ -152,20 +183,27 @@ contains
 
   !This subroutine writes the real 2D array (var), to the variable named (var_name), in the netcdf file with id (file_id), at position (it)
   !This should be used to write real arrays (var), to a variable (var_name), with an infinite dimension, (var_len x undefined)
-  subroutine assign_exp_real(var_name, var, file_id, it)
+  subroutine assign_exp_real(var, file_id, it, var_name, var_id_in)
     implicit none
 
-    character(len=*),    intent(in)    :: var_name
-    integer(kind=int32), intent(in)    :: file_id, it
+    character(len=*),    intent(in), optional    :: var_name
+    integer(kind=int32), intent(in), optional    :: var_id_in
+    integer(kind=int32), intent(in)              :: file_id, it
     
     real(kind=real64), intent(in)      :: var(:,:)
 
     integer(kind=int32)                :: var_id, ierr
 
-    ierr = nf90_inq_varid(file_id, var_name, var_id)
-    if (ierr /= 0) print*, var_name
-    call error_check(ierr)
-
+    if (present(var_name)) then
+       ierr = nf90_inq_varid(file_id, var_name, var_id)
+       if (ierr /= nf90_noerr) print*, var_name
+       call error_check(ierr)
+       
+    else
+       var_id = var_id_in
+       
+    end if
+    
     ierr = nf90_put_var(file_id, var_id, var, (/1,it/))
     call error_check(ierr)
 
@@ -174,13 +212,13 @@ contains
   !This subroutine creates a variable called (var_name) with length (var_len) and data type (var_typ (f90_int or f90_double)), in a netcdf file with id (file_id)
   !You can optionally prescribe units to the variable (units)
   !If the file is NOT in definition mode, so already exists, you can use (act='add') to add the variable to an existing netcdf file with id (file_id)
-  subroutine create_sing_var(var_name, var_typ, var_len, file_id, units, act)
+  subroutine create_sing_var(var_name, var_typ, var_len, file_id, units, act, var_id_out)
     implicit none
 
     integer(kind=int32), intent(in)              :: var_typ, var_len, file_id
     character(len=*),    intent(in)              :: var_name
     character(len=*),    intent(in),    optional :: act, units
-
+    integer(kind=int32), intent(out),   optional :: var_id_out
     integer(kind=int32)                          :: ierr, dim_id, var_id
 
     if (act == 'add') then
@@ -199,6 +237,10 @@ contains
        call error_check(ierr)
     end if
 
+    if (present(var_id_out)) then
+       var_id_out = var_id
+    end if
+    
     if (act == 'add') then
        ierr = nf90_enddef(file_id)
        call error_check(ierr)
@@ -209,13 +251,13 @@ contains
   !This subroutine creates an expanding variable called (var_name), with dimension (var_len x undefined), and with data type (var_typ (f90_int or f90_double)), in a netcdf file with id (file_id)
   !You can optionally prescribe units to the variable (units)
   !If the file is NOT in definition mode, so already exists, you can use (act='add') to add the variable to an existing netcdf file with id (file_id)
-  subroutine create_exp_var(var_name, var_typ, var_len, file_id, units, act)
+  subroutine create_exp_var(var_name, var_typ, var_len, file_id, units, act, var_id_out)
     implicit none
 
     integer(kind=int32), intent(in)              :: var_typ, var_len, file_id
     character(len=*),    intent(in)              :: var_name
     character(len=*),    intent(in),    optional :: act, units
-
+    integer(kind=int32), intent(out),   optional :: var_id_out
     integer(kind=int32)                          :: ierr, dim_id(2), var_id
     
     if (act == 'add') then
@@ -235,6 +277,10 @@ contains
     if (present(units)) then
        ierr = nf90_put_att(file_id, var_id, 'Units', units)
        call error_check(ierr)
+    end if
+
+    if (present(var_id_out)) then
+       var_id_out = var_id
     end if
 
     if (act == 'add') then
@@ -263,9 +309,9 @@ contains
     end if
 
     if (present(vect)) then
-       call assign_int(var_name, file_id, 'w', vect=vect)
+       call assign_int(file_id, 'w', vect=vect, var_name=var_name)
     else if (present(sing)) then
-       call assign_int(var_name, file_id, 'w', sing=sing)
+       call assign_int(file_id, 'w', sing=sing, var_name=var_name)
     end if
     
   end subroutine save_int
@@ -289,9 +335,9 @@ contains
     end if
 
     if (present(vect)) then
-       call assign_real(var_name, file_id, 'w', vect=vect)
+       call assign_real(file_id, 'w', vect=vect, var_name=var_name)
     else if (present(sing)) then
-       call assign_real(var_name, file_id, 'w', sing=sing)
+       call assign_real(file_id, 'w', sing=sing, var_name=var_name)
     end if
     
   end subroutine save_real
@@ -324,20 +370,20 @@ contains
     ierr = nf90_open(file_name, NF90_NOWRITE, file_id)
     call error_check(ierr)
 
-    call assign_int('sim_steps',   file_id, 'r', sing=sim_steps)
-    call assign_int('out_steps',   file_id, 'r', sing=out_steps)
-    call assign_int('space_steps', file_id, 'r', sing=space_steps)
-    call assign_real('temp',       file_id, 'r', sing=temp)
-    call assign_real('rad',        file_id, 'r', sing=rad)
-    call assign_real('thick',      file_id, 'r', sing=thick)
-    call assign_real('rr_coef',    file_id, 'r', sing=rr_coef)
-    call assign_real('dif_coef',   file_id, 'r', sing=dif_coef)
-    call assign_real('init_c',     file_id, 'r', sing=init_c)
-    call assign_real('max_c',      file_id, 'r', sing=max_c)
-    call assign_real('c_rate',     file_id, 'r', sing=c_rate)
-    call assign_real('dt',         file_id, 'r', sing=dt)
-    call assign_real('vol_per',    file_id, 'r', sing=vol_per)
-    call assign_real('area',       file_id, 'r', sing=area)
+    call assign_int(file_id, 'r', sing=sim_steps, var_name='sim_steps')
+    call assign_int(file_id, 'r', sing=out_steps, var_name='out_steps')
+    call assign_int(file_id, 'r', sing=space_steps, var_name='space_steps')
+    call assign_real(file_id, 'r', sing=temp, var_name='temp')
+    call assign_real(file_id, 'r', sing=rad, var_name='rad')
+    call assign_real(file_id, 'r', sing=thick, var_name='thick')
+    call assign_real(file_id, 'r', sing=rr_coef, var_name='rr_coef')
+    call assign_real(file_id, 'r', sing=dif_coef, var_name='dif_coef')
+    call assign_real(file_id, 'r', sing=init_c, var_name='init_c')
+    call assign_real(file_id, 'r', sing=max_c, var_name='max_c')
+    call assign_real(file_id, 'r', sing=c_rate, var_name='c_rate')
+    call assign_real(file_id, 'r', sing=dt, var_name='dt')
+    call assign_real(file_id, 'r', sing=vol_per, var_name='vol_per')
+    call assign_real(file_id, 'r', sing=area, var_name='area')
     
     
     ierr = nf90_close(file_id)
@@ -388,25 +434,28 @@ contains
     call create_sing_var('vol_per',     nf90_double, 1, output_id, '%')
     call create_sing_var('area',        nf90_double, 1, output_id, '$m^2$')
 
-    call create_exp_var('conc', nf90_double, space_steps, output_id, '$mol m^{-3}$')
+    call create_exp_var('conc', nf90_double, space_steps, output_id, '$mol m^{-3}$', var_id_out=conc_out_id)
 
     ierr = nf90_enddef(output_id)
     call error_check(ierr)
 
-    call assign_int('sim_steps',   output_id, 'w', sing=sim_steps)
-    call assign_int('out_steps',   output_id, 'w', sing=out_steps)
-    call assign_int('space_steps', output_id, 'w', sing=space_steps)
-    call assign_real('temp',       output_id, 'w', sing=temp)
-    call assign_real('rad',        output_id, 'w', sing=rad)
-    call assign_real('thick',      output_id, 'w', sing=thick)
-    call assign_real('rr_coef',    output_id, 'w', sing=rr_coef)
-    call assign_real('dif_coef',   output_id, 'w', sing=dif_coef)
-    call assign_real('init_c',     output_id, 'w', sing=init_c)
-    call assign_real('max_c',      output_id, 'w', sing=max_c)
-    call assign_real('c_rate',     output_id, 'w', sing=c_rate)
-    call assign_real('dt',         output_id, 'w', sing=dt)
-    call assign_real('vol_per',    output_id, 'w', sing=vol_per)
-    call assign_real('area',       output_id, 'w', sing=area)
+    call assign_int(output_id, 'w', sing=sim_steps, var_name='sim_steps')
+    call assign_int(output_id, 'w', sing=out_steps, var_name='out_steps')
+    call assign_int(output_id, 'w', sing=space_steps, var_name='space_steps')
+    call assign_real(output_id, 'w', sing=temp, var_name='temp')
+    call assign_real(output_id, 'w', sing=rad, var_name='rad')
+    call assign_real(output_id, 'w', sing=thick, var_name='thick')
+    call assign_real(output_id, 'w', sing=rr_coef, var_name='rr_coef')
+    call assign_real(output_id, 'w', sing=dif_coef, var_name='dif_coef')
+    call assign_real(output_id, 'w', sing=init_c, var_name='init_c')
+    call assign_real(output_id, 'w', sing=max_c, var_name='max_c')
+    call assign_real(output_id, 'w', sing=c_rate, var_name='c_rate')
+    call assign_real(output_id, 'w', sing=dt, var_name='dt')
+    call assign_real(output_id, 'w', sing=vol_per, var_name='vol_per')
+    call assign_real(output_id, 'w', sing=area, var_name='area')
+
+    tot_steps = 0
+    final_time = 0.0
 
   end subroutine initiate_file
   
@@ -421,9 +470,9 @@ contains
     ierr = nf90_create(file_name, nf90_netcdf4, check_id)
     call error_check(ierr)
 
-    call create_sing_var('tot_steps',   nf90_int,    1, check_id)
+    call create_sing_var('tot_steps',   nf90_int,    1, check_id, var_id_out=ts_check_id)
     call create_sing_var('space_steps', nf90_int,    1, check_id)
-    call create_sing_var('time',        nf90_double, 1, check_id)
+    call create_sing_var('time',        nf90_double, 1, check_id, var_id_out=time_check_id)
     !call create_sing_var('rad',         nf90_double, 1, file_id, 'm')
     !call create_sing_var('thick',       nf90_double, 1, file_id, 'm')
     !call create_sing_var('rr_coef',     nf90_double, 1, file_id, '$Am^{-2}(m^3mol^{-1})^{1.5}$')
@@ -435,33 +484,45 @@ contains
     !call create_sing_var('vol_per',     nf90_double, 1, file_id, '%')
     !call create_sing_var('area',        nf90_double, 1, file_id, '$m^2$')
 
-    call create_exp_var('conc', nf90_double, space_steps, check_id, '$mol m^{-3}$')
+    call create_exp_var('conc', nf90_double, space_steps, check_id, '$mol m^{-3}$', var_id_out=conc_check_id)
 
     ierr = nf90_enddef(check_id)
     call error_check(ierr)
 
-    call assign_int('space_steps', check_id, 'w', sing=space_steps)
-
-    tot_steps = 0
+    call assign_int(check_id, 'w', sing=space_steps, var_name='space_steps')
     
   end subroutine initiate_checkp
 
   !This subroutine reads from a checkpoint file named (file_name) and saves the concentration vector to (conc)
   !It also extracts other variables to keep track of the total simulation steps and total simulation time
-  subroutine load_checkp(file_name, conc)
+  subroutine load_checkp(check_file_name, out_file_name, conc, volt_do)
     implicit none
     
-    character(len=*),    intent(in)    :: file_name
+    character(len=*),    intent(in)    :: check_file_name, out_file_name
     real(kind=real64),   intent(inout) :: conc(:)
-    
+    logical,             intent(in)    :: volt_do
     integer(kind=int32)                :: ierr
 
-    ierr = nf90_open(file_name, NF90_WRITE, check_id)
+    ierr = nf90_open(check_file_name, NF90_WRITE, check_id)
     call error_check(ierr)
 
-    call assign_real('time', check_id, 'r', sing=final_time)
-    call assign_real('conc', check_id, 'r', vect=conc)
-    call assign_int('tot_steps', check_id, 'r', sing=tot_steps)
+    call assign_real(check_id, 'r', sing=final_time, var_name='time', var_id_out=time_check_id)
+    call assign_real(check_id, 'r', vect=conc, var_name='conc', var_id_out=conc_check_id)
+    call assign_int(check_id, 'r', sing=tot_steps, var_name='tot_steps', var_id_out=ts_check_id)
+    print*, tot_steps
+
+    ierr = nf90_open(out_file_name, NF90_WRITE, output_id)
+    call error_check(ierr)
+
+    ierr = nf90_inq_varid(output_id, 'conc', conc_out_id)
+    if (ierr /= nf90_noerr) print*, 'conc'
+    call error_check(ierr)
+
+    if (volt_do .eqv. .True.) then
+       ierr = nf90_inq_varid(output_id, 'volt', volt_out_id)
+       if (ierr /= nf90_noerr) print*, 'volt'
+       call error_check(ierr)
+    end if
     
   end subroutine load_checkp
 
@@ -476,10 +537,10 @@ contains
     real(kind=real64)                  :: time
 
     time = (step_num * dt) + final_time
-    steps = tot_steps + step_num
-    call assign_real('time', check_id, 'w', sing=time)
-    call assign_real('conc', check_id, 'w', vect=conc)
-    call assign_int('tot_steps', check_id, 'w', sing=steps)
+    steps = step_num + out_steps - 1
+    call assign_real(check_id, 'w', sing=time, var_id_in=time_check_id)
+    call assign_real(check_id, 'w', vect=conc, var_id_in=conc_check_id)
+    call assign_int(check_id, 'w', sing=steps, var_id_in=ts_check_id)
     
   end subroutine update_checkp
   

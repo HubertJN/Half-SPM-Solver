@@ -32,7 +32,9 @@ contains
     
   end subroutine error_check
 
-  !This subroutine reads (act=r) or writes (act=w) a single integer (sing) or a vector (vect), from/to a variable with name (var_name) in a NetCDF file with id (file_id)
+  !This subroutine reads (act=r) or writes (act=w) a single integer (sing) or a vector (vect), from/to a variable with name (var_name) or id (var_id_in)...
+  !...in a NetCDF file with id (file_id)
+  !Optionally you can save the variable id by inputting a variable to store it (var_id_out)
   subroutine assign_int(file_id, act, vect, sing, var_name, var_id_in, var_id_out)
     implicit none
 
@@ -94,7 +96,9 @@ contains
     
   end subroutine assign_int
 
-  !This subroutine reads (act=r) or writes (act=w) a single real number (sing) or vector (vect), from/to a variable with name (var_name) in a NetCDF file with id (file_id)
+  !This subroutine reads (act=r) or writes (act=w) a single real number (sing) or a vector (vect), from/to a variable with name (var_name) or id (var_id_in)...
+  !...in a NetCDF file with id (file_id)
+  !Optionally you can save the variable id by inputting a variable to store it (var_id_out)
   subroutine assign_real(file_id, act, vect, sing, var_name, var_id_in, var_id_out)
     implicit none
 
@@ -153,7 +157,7 @@ contains
     end if
   end subroutine assign_real
 
-  !This subroutine writes the integer 2D array (var), to the variable named (var_name), in the netcdf file with id (file_id), at position (it)
+  !This subroutine writes the integer 2D array (var), to the variable named (var_name) with variable id (var_id_in), in the netcdf file with id (file_id), at position (it)
   !This should be used to write integer arrays (var), to a variable (var_name), with an infinite dimension, (var_len x undefined)
   subroutine assign_exp_int(var, file_id, it, var_name, var_id_in)
     implicit none
@@ -181,7 +185,7 @@ contains
 
   end subroutine assign_exp_int
 
-  !This subroutine writes the real 2D array (var), to the variable named (var_name), in the netcdf file with id (file_id), at position (it)
+  !This subroutine writes the real 2D array (var), to the variable named (var_name) with variable id (var_id_in), in the netcdf file with id (file_id), at position (it)
   !This should be used to write real arrays (var), to a variable (var_name), with an infinite dimension, (var_len x undefined)
   subroutine assign_exp_real(var, file_id, it, var_name, var_id_in)
     implicit none
@@ -210,7 +214,7 @@ contains
   end subroutine assign_exp_real
 
   !This subroutine creates a variable called (var_name) with length (var_len) and data type (var_typ (f90_int or f90_double)), in a netcdf file with id (file_id)
-  !You can optionally prescribe units to the variable (units)
+  !You can optionally prescribe units to the variable (units), and if you want to save the variable id you can input a variable to store it (var_id_out)
   !If the file is NOT in definition mode, so already exists, you can use (act='add') to add the variable to an existing netcdf file with id (file_id)
   subroutine create_sing_var(var_name, var_typ, var_len, file_id, units, act, var_id_out)
     implicit none
@@ -249,7 +253,7 @@ contains
   end subroutine create_sing_var
 
   !This subroutine creates an expanding variable called (var_name), with dimension (var_len x undefined), and with data type (var_typ (f90_int or f90_double)), in a netcdf file with id (file_id)
-  !You can optionally prescribe units to the variable (units)
+  !You can optionally prescribe units to the variable (units) and if you want to save the variable id you can input a variable to store it (var_id_out)
   !If the file is NOT in definition mode, so already exists, you can use (act='add') to add the variable to an existing netcdf file with id (file_id)
   subroutine create_exp_var(var_name, var_typ, var_len, file_id, units, act, var_id_out)
     implicit none
@@ -494,7 +498,8 @@ contains
   end subroutine initiate_checkp
 
   !This subroutine reads from a checkpoint file named (file_name) and saves the concentration vector to (conc)
-  !It also extracts other variables to keep track of the total simulation steps and total simulation time
+  !It extracts other variables to keep track of the total simulation steps and total simulation time
+  !It also opens an old netcdf output file and gets variable ids for the variables it will write new data to
   subroutine load_checkp(check_file_name, out_file_name, conc, volt_do)
     implicit none
     

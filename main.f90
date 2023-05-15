@@ -30,9 +30,17 @@ PROGRAM main
   REAL(REAL64), ALLOCATABLE :: c_tmp(:), volt(:,:)
   INTEGER :: i, j, quo, step_prog
   LOGICAL :: checkpoint = .false., volt_do= .True. !test - default or not; voltage calcs or not
+
+  integer(kind=int32) :: rate, ts, tc, conc_time, volt_time, write_time, total_time
+
+  call system_clock(total_time,rate)
   
   !Import parameters from input file
   CALL import_input(loadname)
+
+  call system_clock(tc,rate)
+  write(0,'("Import Time",18x,": ",F15.6," seconds")')real(tc-total_time,kind=dp)/real(rate,kind=dp)
+  ts = total_time
   
   !allocate arrays
   IF (ALLOCATED(conc)) THEN
@@ -48,7 +56,11 @@ PROGRAM main
   !Assign concentration to an impossible number to check for errors
   conc = -1.0_REAL64
   !Get the number of chunks you want to split the concentration matrix into
-  quo = CEILING(real(sim_steps, kind=real64)/real(out_steps, kind=real64)) 
+  quo = CEILING(real(sim_steps, kind=real64)/real(out_steps, kind=real64))
+
+  call system_clock(tc,rate)
+  write(0,'("Setup Time",19x,": ",F15.6," seconds")')real(tc-ts,kind=dp)/real(rate,kind=dp)
+  ts = tc
   
   !If starting from a checkpoint then allocate a temporary vector to store the checkpoint concentration
   !Otherwise initialise an output file and a checkpoint file and produce the initial concentration vector
@@ -68,6 +80,10 @@ PROGRAM main
      
   end if
 
+  call system_clock(tc,rate)
+  write(0,'("Initiate out or check",8x,": ",F15.6," seconds")')real(tc-ts,kind=dp)/real(rate,kind=dp)
+  ts = tc
+  
   !Calculate parameters to be used later
   a = 3.0_REAL64*vol_per/(100.0_REAL64*rad)
   iapp = c_rate*dt/area
@@ -126,27 +142,41 @@ PROGRAM main
         
      end if
 
+     call system_clock(tc,rate)
+     write(0,'("Prepare Loop",17x,": ",F15.6," seconds")')real(tc-ts,kind=dp)/real(rate,kind=dp)
+     ts=tc
+     conc_time = 0
+     volt_time = 0
+     write_time = 0
      !Then we loop over all sim_steps in chunks of out_steps to save the total concentration matrix in blocks
      DO i = 1, (quo-1)
         DO j = 1, (out_steps-1)
+           call system_clock(ts,rate)
            conc(:,(j+1)) = crank_nicholson(rad,dif_coef,flux_param,dt,conc(:,j))
            !conc(:,(j+1)) = fd(rad,dif_coef,flux_param,dt,conc(:,j))
+           call system_clock(tc,rate)
+           conc_time = conc_time + (tc-ts)
         END DO
-      
+
+        call system_clock(ts,rate)
         !Now we take the conctration values at the edge of the vectors and use them to calculate the voltages
         volt(1,:) = volt_calc(conc(space_steps,:), gas_con, temp, farad, iapp, a, thick, rr_coef, max_c)
-
+        call system_clock(tc,rate)
+        volt_time = volt_time + (tc-ts)
         !Now we save the conc block and the voltage vector to the output file keeping track of the number of steps performed including if we start from a checkpoint
         !And we save the final concentration vector to the checkpoint file overwriting the existing values
+        call system_clock(ts,rate)
         step_prog = (((i-1)*out_steps)+1) + tot_steps
         CALL assign_exp_real(conc, output_id, step_prog, var_id_in=conc_out_id)
         CALL assign_exp_real(volt, output_id, step_prog, var_id_in=volt_out_id)
         call update_checkp(conc(:,out_steps), step_prog)
-
+        call system_clock(tc,rate)
+        write_time = write_time + (tc-ts)
         conc(:,1) = crank_nicholson(rad,dif_coef,flux_param,dt,conc(:,out_steps))
         !conc(:,(j+1)) = fd(rad,dif_coef,flux_param,dt,conc(:,j))
      END DO
 
+     call system_clock(ts,rate)
      !Once the above is completed for quo-1 blocks, for the final block we dont have to perform the additional time evolution at the end, so this is removed
      DO j = 1, (out_steps-1)
         conc(:,(j+1)) = crank_nicholson(rad,dif_coef,flux_param,dt,conc(:,j))
@@ -162,11 +192,18 @@ PROGRAM main
      CALL assign_exp_real(conc, output_id, step_prog, var_id_in=conc_out_id)
      CALL assign_exp_real(volt, output_id, step_prog, var_id_in=volt_out_id)
      call update_checkp(conc(:,out_steps), step_prog)
-    
+     call system_clock(tc,rate)
+     write(0,'("One Cycle",20x,": ",F15.6," seconds")')real(tc-ts,kind=dp)/real(rate,kind=dp)
+     write(0,'("Conc time",20x,": ",F15.6," seconds")')real(conc_time,kind=dp)/real(rate,kind=dp)
+     write(0,'("volt time",20x,": ",F15.6," seconds")')real(volt_time,kind=dp)/real(rate,kind=dp)
+     write(0,'("Write time",19x,": ",F15.6," seconds")')real(write_time,kind=dp)/real(rate,kind=dp)
+     ts = tc
   END IF
 
   !Then we close the open output and checkpoint files
   call fin_in_out()
 
+  call system_clock(tc,rate)
+  write(0,'("Total time",19x,": ",F15.6," seconds")')real(tc-total_time,kind=dp)/real(rate,kind=dp)
 
 END PROGRAM main

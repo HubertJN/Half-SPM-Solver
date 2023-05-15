@@ -4,6 +4,7 @@ PROGRAM main
   USE pde_solver
   use fd_solver
   USE input_output_netcdf
+  !$  use omp_lib
   
   IMPLICIT NONE
   
@@ -33,6 +34,7 @@ PROGRAM main
 
   integer(kind=int32) :: rate, ts, tc, conc_time, volt_time, write_time, total_time
 
+  call omp_set_num_threads(4)
   call system_clock(total_time,rate)
   
   !Import parameters from input file
@@ -150,6 +152,7 @@ PROGRAM main
      write_time = 0
      !Then we loop over all sim_steps in chunks of out_steps to save the total concentration matrix in blocks
      DO i = 1, (quo-1)
+        !$OMP parallel default (shared) private(j)
         DO j = 1, (out_steps-1)
            call system_clock(ts,rate)
            conc(:,(j+1)) = crank_nicholson(rad,dif_coef,flux_param,dt,conc(:,j))
@@ -163,6 +166,8 @@ PROGRAM main
         volt(1,:) = volt_calc(conc(space_steps,:), gas_con, temp, farad, iapp, a, thick, rr_coef, max_c)
         call system_clock(tc,rate)
         volt_time = volt_time + (tc-ts)
+        !$OMP end parallel
+        !Need to end here for the correct write?
         !Now we save the conc block and the voltage vector to the output file keeping track of the number of steps performed including if we start from a checkpoint
         !And we save the final concentration vector to the checkpoint file overwriting the existing values
         call system_clock(ts,rate)

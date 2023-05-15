@@ -1,12 +1,77 @@
 MODULE pde_solver
 
   USE ISO_FORTRAN_ENV
+  use input_output_netcdf
   
   IMPLICIT NONE
+  real(kind=real64) :: rhs_const
   
-  CONTAINS
-  
-  FUNCTION crank_nicholson(rad,dif_coef,flux_param,dt,c_cur)
+CONTAINS
+
+  subroutine setup_crank_nicholson(AL, A, AU, B)
+    implicit none
+
+    REAL(REAL64), DIMENSION(:),   intent(inout) :: AL, A, AU
+    REAL(REAL64), DIMENSION(:,:), intent(inout) :: B
+
+    REAL(REAL64)                                :: ai, ri, num, iapp, flux_param, div_const, dr
+    integer(int32)                              :: n, i
+
+    n = space_steps
+    IF (n < 2) THEN
+      PRINT *, "Warning: Invalid input - input array size is less than 2. Terminating." 
+      STOP
+    END IF
+
+    dr = rad/(REAL(space_steps-1, KIND=REAL64))
+
+    num = 3.0_REAL64*vol_per/(100.0_REAL64*rad)
+    iapp = c_rate*dt/area
+    flux_param = iapp/(num*farad*thick)
+
+    AL = 0.0_REAL64
+    A = 0.0_REAL64
+    AU = 0.0_REAL64
+    B = 0.0_REAL64
+
+    DO i=2,n-1
+      !current radius and dimensionless parameter ai
+      ri = REAL((i-1),KIND=REAL64)*dr
+      ai = dt*dif_coef/(2.0_REAL64*dr*ri)
+
+      div_const = ai*(ri/dr)
+      
+      !LHS
+      AL(i-1) = ai - div_const
+      A(i) = 1.0_REAL64 + 2.0_REAL64*div_const
+      AU(i) = -ai - div_const
+      
+      !RHS
+      B(i,i-1) = div_const - ai
+      B(i,i) = 1.0_REAL64 - 2.0_REAL64*div_const
+      B(i,i+1) = ai + div_const
+      
+   END DO
+
+   !smooth boundary conditions at r=0
+    ai = dt*dif_coef/(dr*dr)
+    
+    A(1) = 1.0_REAL64 + ai
+    AU(1) = -ai
+    B(1,1) = 1.0_REAL64 - ai
+    B(1,2) = ai
+    
+    !flux boundary conditions
+    AL(n-1) = -ai
+    A(n) = 1.0_REAL64 + ai
+    B(n,n-1) = ai
+    B(n,n) = 1.0_REAL64 - ai
+
+    rhs_const = 2.0_REAL64*flux_param*(dt/rad + dt/dr)
+    
+  end subroutine setup_crank_nicholson
+    
+  FUNCTION crank_nicholson(AL, A, AU, B, c_cur)
   
     !solves the diffusion equation with constant diffusion coefficient
     !using the Crank-Nicholson algorithm
@@ -15,43 +80,19 @@ MODULE pde_solver
     
     !rad - max radius of the geometry
     !dif_coef - the diffusion coefficient
-    !flux_param - equals to iapp/(aFL), needs to be calculated beforehand!
     !dt - the timestep
     !c_cur - the current concentration vector in in out
     
-    REAL(REAL64), INTENT(IN) :: rad, dif_coef, flux_param, dt
-    REAL(REAL64), DIMENSION(:), INTENT(IN) :: c_cur
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: crank_nicholson
-    REAL(REAL64), DIMENSION(:,:), ALLOCATABLE :: B                              !evolution matrix
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: AL, A, AU, rhs                   !lhs and rhs of equation
-    REAL(REAL64) :: dr, ri, ai                                                  !spacestep, current radius, parameter
-    INTEGER :: i                                                                !loop variables
-    INTEGER :: n, info                                                          !size of array and dgtsv info
+    REAL(REAL64),   DIMENSION(:),                INTENT(IN) :: c_cur, AL, A, AU
+    REAL(REAL64),   DIMENSION(:,:), ALLOCATABLE, intent(in) :: B
+     
+    REAL(REAL64),   DIMENSION(:),   ALLOCATABLE             :: crank_nicholson
+    REAL(REAL64),   DIMENSION(:,:), ALLOCATABLE             :: B_mod
+    REAL(REAL64),   DIMENSION(:),   ALLOCATABLE             :: AL_mod, A_mod, AU_mod, rhs
+    INTEGER(INT32)                                          :: n, info, i
     
     !Get size of input array
-    n = SIZE(c_cur)
-    
-    IF (n < 2) THEN
-      PRINT *, "Warning: Invalid input - input array size is less than 2. Terminating." 
-      STOP
-    END IF
-    
-    !Check status of allocatables and deallocate as required
-    IF (ALLOCATED(AL)) THEN
-      DEALLOCATE(AL)
-    END IF
-    
-    IF (ALLOCATED(A)) THEN
-      DEALLOCATE(A)
-    END IF
-    
-    IF (ALLOCATED(AU)) THEN
-      DEALLOCATE(AU)
-    END IF
-    
-    IF(ALLOCATED(B)) THEN
-      DEALLOCATE(B)
-    END IF
+    n = space_steps
     
     IF(ALLOCATED(rhs)) THEN
       DEALLOCATE(rhs)
@@ -61,65 +102,22 @@ MODULE pde_solver
       DEALLOCATE(crank_nicholson)
     END IF
     
-    !Allocate arrays
-    ALLOCATE(AL(n-1))
-    ALLOCATE(A(n))
-    ALLOCATE(AU(n-1))
-    ALLOCATE(B(n,n))
     ALLOCATE(rhs(n))
     ALLOCATE(crank_nicholson(n))
     
-    !initialise arrays
-    AL = 0.0_REAL64
-    A = 0.0_REAL64
-    AU = 0.0_REAL64
-    B = 0.0_REAL64
     rhs = 0.0_REAL64
-    !crank_nicholson = 0.0_REAL64
-    
-    !calculate space-step and evolution parameter
-    dr = rad/(REAL(n-1, KIND=REAL64))
-    
-    !set array values
-    !so that A*crank = B*c_cur is the equation of evolution
-    
-    DO i=2,n-1
-      !current radius and dimensionless parameter ai
-      ri = REAL((i-1),KIND=REAL64)*dr
-      ai = dt*dif_coef/(2.0_REAL64*dr*ri)
-      
-      !LHS
-      AL(i-1) = ai*(1.0_REAL64 - ri/dr)
-      A(i) = 1.0_REAL64 + ai*2.0_REAL64*ri/dr
-      AU(i) = ai*(-1.0_REAL64 - ri/dr)
-      
-      !RHS
-      B(i,i-1) = ai*(ri/dr - 1.0_REAL64)
-      B(i,i) = 1.0_REAL64 - ai*2.0_REAL64*ri/dr
-      B(i,i+1) = ai*(1.0_REAL64 + ri/dr)
-      
-    END DO
-    
-    !smooth boundary conditions at r=0
-    ai = dt*dif_coef/(dr*dr)
-    
-    A(1) = 1.0_REAL64 + ai
-    AU(1) = -1.0_REAL64*ai
-    B(1,1) = 1.0_REAL64 - ai
-    B(1,2) = ai
-    
-    !flux boundary conditions
-    AL(n-1) = -1.0_REAL64*ai
-    A(n) = 1.0_REAL64 + ai
-    B(n,n-1) = ai
-    B(n,n) = 1.0_REAL64 - ai
+    crank_nicholson = 0.0_REAL64
     
     !generate RHS
     rhs = MATMUL(B,c_cur)
-    rhs(n) = rhs(n) - 2.0_REAL64*flux_param*(dt/rad + dt/dr)
+    rhs(n) = rhs(n) - rhs_const
+
+    AL_mod = AL
+    A_mod = A
+    AU_mod = AU
     
     !dgtsv solver
-    CALL dgtsv(n,1,AL,A,AU,rhs,n,info)
+    CALL dgtsv(n,1,AL_mod,A_mod,AU_mod,rhs,n,info)
     
     !Error handling - crude at this stage
     IF (info < 0) THEN

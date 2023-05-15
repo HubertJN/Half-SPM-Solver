@@ -4,7 +4,7 @@ MODULE pde_solver
   use input_output_netcdf
   
   IMPLICIT NONE
-  real(kind=real64) :: rhs_const
+  real(kind=real64) :: rhs_const, volt_con_ial, volt_con_rtf
   
 CONTAINS
 
@@ -27,7 +27,10 @@ CONTAINS
 
     num = 3.0_REAL64*vol_per/(100.0_REAL64*rad)
     iapp = c_rate*dt/area
+    
     flux_param = iapp/(num*farad*thick)
+    volt_con_ial = iapp/(num*thick)
+    volt_con_rtf = (2.0_REAL64*gas_con*temp)/farad
 
     AL = 0.0_REAL64
     A = 0.0_REAL64
@@ -175,7 +178,7 @@ CONTAINS
   END FUNCTION U_arr
   
   
-  FUNCTION volt_scalar(cin, Rg, T, F, iapp, a, L, K, cmax)
+  FUNCTION volt_scalar(cin)!, Rg, T, F, iapp, a, L, K, cmax)
   
     !Calculates scalar voltage when given 
     !a SCALAR INPUT of concentration
@@ -189,21 +192,23 @@ CONTAINS
     !cmax = 'max_c'
     
     !TODO: Neaten up (prevent writing so many params, maybe incorporate into module itself?)
-    REAL(REAL64), INTENT(IN) :: cin, Rg, T, F, iapp, a, L, K, cmax
-    REAL(REAL64) :: arsinh
+    REAL(REAL64), INTENT(IN) :: cin
+    REAL(REAL64) :: arsinh, div_const
     REAL(REAL64) :: volt_scalar 
     
     !Calculates arsinh part
-    arsinh = F*K*SQRT((cin/cmax)*(1.0_REAL64 - cin/cmax))          !jc
-    arsinh = iapp/(a*L*arsinh)                                     !argument of arsinh
-    arsinh = LOG(arsinh + SQRT(arsinh**2.0_REAL64 + 1.0_REAL64))   !arsinh
+    div_const = cin/max_c
     
-    volt_scalar = U_scalar(cin/cmax) - (2.0_REAL64*Rg*T/F)*arsinh
+    arsinh = farad*rr_coef*SQRT(div_const - (div_const**2))
+    arsinh = volt_con_ial/arsinh
+    arsinh = ASINH(arsinh)
+    
+    volt_scalar = U_scalar(div_const) - (volt_con_rtf*arsinh)
     
   END FUNCTION volt_scalar
   
   
-  FUNCTION volt_array(arrin, Rg, T, F, iapp, a, L, K, cmax)
+  FUNCTION volt_array(arrin)
     
     !Calculates an array of voltages when given 
     !an ARRAY INPUT of concentrations
@@ -211,9 +216,9 @@ CONTAINS
     
     !TODO: Neaten up (prevent writing so many params, maybe incorporate into module itself?)
     REAL(REAL64), DIMENSION(:), INTENT(IN) :: arrin
-    REAL(REAL64), INTENT(IN) :: Rg, T, F, iapp, a, L, K, cmax
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: arsinh
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: volt_array 
+    
+    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: arsinh, div_const
+    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: volt_array
     INTEGER :: size_arr
     
     IF (ALLOCATED(volt_array)) THEN
@@ -222,20 +227,27 @@ CONTAINS
     
     IF (ALLOCATED(arsinh)) THEN
       DEALLOCATE(arsinh)
-    END IF
+   END IF
+
+   IF (ALLOCATED(div_const)) THEN
+      DEALLOCATE(div_const)
+   END IF
     
-    size_arr = SIZE(arrin)
+   size_arr = SIZE(arrin)
     
-    ALLOCATE(volt_array(size_arr))
-    ALLOCATE(arsinh(size_arr))
+   ALLOCATE(volt_array(size_arr))
+   ALLOCATE(arsinh(size_arr))
+   ALLOCATE(div_const(size_arr))
+
+   !Calculates arsinh part
+   div_const = arrin/max_c
     
-    !Calculates arsinh part
-    arsinh = F*K*SQRT((arrin/cmax)*(1.0_REAL64 - arrin/cmax))       !jc
-    arsinh = iapp/(a*L*arsinh)                                      !argument of arsinh
-    arsinh = LOG(arsinh + SQRT(arsinh**2.0_REAL64 + 1.0_REAL64))    !arsinh
+   arsinh = farad*rr_coef*SQRT(div_const - (div_const**2))
+   arsinh = volt_con_ial/arsinh
+   arsinh = ASINH(arsinh)
     
-    volt_array = U_arr(arrin/cmax) - (2.0_REAL64*Rg*T/F)*arsinh
+   volt_array = U_arr(div_const) - (volt_con_rtf*arsinh)
     
-  END FUNCTION volt_array
+ END FUNCTION volt_array
     
 END MODULE pde_solver

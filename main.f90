@@ -188,7 +188,7 @@ PROGRAM main
 
         call system_clock(ts,rate)
         !Now we take the conctration values at the edge of the vectors and use them to calculate the voltages
-        volt(1,:) = volt_calc(conc(space_steps,:), gas_con, temp, farad, iapp, con, thick, rr_coef, max_c)
+        volt(1,:) = volt_calc(conc(space_steps,:))
         call system_clock(tc,rate)
         volt_time = volt_time + (tc-ts)
         !Now we save the conc block and the voltage vector to the output file keeping track of the number of steps performed including if we start from a checkpoint
@@ -214,7 +214,7 @@ PROGRAM main
      END DO
 
      !Calculate the voltage vector for the final conc block
-     volt(1,:) = volt_calc(conc(space_steps,:), gas_con, temp, farad, iapp, con, thick, rr_coef, max_c)
+     volt(1,:) = volt_calc(conc(space_steps,:))
 
      !Now we save the conc block and the voltage vector to the output file keeping track of the number of steps performed including if we start from a checkpoint
      !And we save the final concentration vector to the checkpoint file overwriting the existing values

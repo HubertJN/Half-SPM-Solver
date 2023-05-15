@@ -56,9 +56,13 @@ ax1.set_xlabel('particle radius [$\mu m$]', size=8)
 ax1.xaxis.set_minor_locator(AutoMinorLocator())
 ax1.tick_params(axis='x', labelsize=7)
 ax1.set_ylabel('Lithium concentration $mol*m^{-3}$', size=8)
+ax1.set_ylim(np.min(c)-1*10**(-9), np.max(c)+1*10**(-9))
 ax1.yaxis.set_minor_locator(AutoMinorLocator())
 ax1.tick_params(axis='y', labelsize=7)
-ax1.set_title('Lithium concentration', size=10)
+ax1.ticklabel_format(axis='both', style="sci", useMathText=True)
+ax1.xaxis.offsetText.set_fontsize(7)
+ax1.yaxis.offsetText.set_fontsize(7)
+ax1.set_title('Lithium concentration', size=10, pad=15.0)
 
 # Subplot 2 - pcolorplot of concentration data
 
@@ -101,11 +105,14 @@ ax2.tick_params(axis='x', labelsize=7)
 ax2.set_ylabel('particle radius [$\mu m$]', size=8)
 ax2.yaxis.set_minor_locator(AutoMinorLocator())
 ax2.tick_params(axis='y', labelsize=7)
-ax2.set_title('concentration coloured contour plot', size=10)
+ax2.ticklabel_format(axis='both', style="sci", useMathText=True)
+ax2.xaxis.offsetText.set_fontsize(7)
+ax2.yaxis.offsetText.set_fontsize(7)
+ax2.set_title('concentration coloured contour plot', size=10, pad=15.0)
 cbar = ax2.figure.colorbar(cplot, ax=ax2, cmap=colour, ticks=ticklist)
 cbar.ax.tick_params(labelsize=7)
-cbar.ax.set_ylabel('Lithium concentratoin', size=8)
-cbar.ax.yaxis.set_major_formatter(StrMethodFormatter("{x:.1f}"))
+cbar.ax.set_ylabel('Lithium concentration', size=8)
+cbar.ax.yaxis.set_major_formatter(StrMethodFormatter("{x:.10f}"))
 
 # animation function for the pcolor plot animation
 # works generally the same as for subplot 1
@@ -129,18 +136,21 @@ animation_pcol = FuncAnimation(fig, animate_pcol, interval=intervaltime, frames=
 # Subplot 3 - plot of voltage output
 
 # accessing the voltage data and setting the number of time steps as x-axis
-vol = dat['volt'][:][:,0]
+volt = dat['volt'][:][:,0]
 time = np.linspace(0, t_steps, t_steps).astype(int)
 
 # plotting the 2D graph and customising it
-ax3.plot(vol, time)
+ax3.plot(time, volt)
 ax3.set_xlabel('time [s]', size=8)
 ax3.xaxis.set_minor_locator(AutoMinorLocator())
 ax3.tick_params(axis='x', labelsize=7)
 ax3.set_ylabel('Voltage [V]', size=8)
 ax3.yaxis.set_minor_locator(AutoMinorLocator())
 ax3.tick_params(axis='y', labelsize=7)
-ax3.set_title('Voltage output', size=10)
+ax3.ticklabel_format(axis='both', style="sci", useMathText=True)
+ax3.xaxis.offsetText.set_fontsize(7)
+ax3.yaxis.offsetText.set_fontsize(7)
+ax3.set_title('Voltage output', size=10, pad=15.0)
 
 plt.draw()
 plt.tight_layout()

@@ -4,11 +4,11 @@
 
 #Fortran compiler & flags 
 #Uncomment -02 to add compiler optimisation 
-compiler=gfortran #-02 -Wall -Wextra
+compiler=gfortran #-std=f2008 #-02 -Wall -Wextra
 
 flags=`nf-config --fflags` #mpif90 -I/warwick/desktop/2018/software/libpng/1.6.37-GCCcore-8.3.0/include/
 
-libraries=`nf-config --flibs` -llapack
+libraries=`nf-config --flibs` -llapack -fopenmp
 
 main=main.f90
 
@@ -20,6 +20,11 @@ object=input_output_netcdf.o fd.o pde.o
 #Compile line
 test.out: $(object)
 	$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
+	@#automatically execute commands
+	./test.out
+	python3 plots.py
+	@#clean output files after visualisation is produced 
+	@#make clean
 	
 	
 #Checking if object files created 

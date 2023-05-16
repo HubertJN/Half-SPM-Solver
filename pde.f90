@@ -2,7 +2,7 @@ MODULE pde_solver
 
   USE ISO_FORTRAN_ENV
   use input_output_netcdf
-  !$ use OMP_lib
+  !$  use omp_lib
   
   IMPLICIT NONE
   real(kind=real64) :: rhs_const, volt_con_ial, volt_con_rtf
@@ -112,7 +112,11 @@ CONTAINS
     rhs = 0.0_REAL64
     crank_nicholson = 0.0_REAL64
     
-    !generate RHS#
+    !call omp_set_num_threads(4)
+    
+    
+    !generate RHS
+    !$OMP parallel do default (shared) private(i,j)
     Do i=1, space_steps
        Do j=1, space_steps
           rhs(i) = rhs(i) + (B(j, i) * c_cur(j))
@@ -120,8 +124,7 @@ CONTAINS
     end do
     
     !rhs = MATMUL(B,c_cur)
-
-
+   
     rhs(n) = rhs(n) - rhs_const
 
     AL_mod = AL
@@ -203,7 +206,7 @@ CONTAINS
     !TODO: Neaten up (prevent writing so many params, maybe incorporate into module itself?)
     REAL(REAL64), INTENT(IN) :: cin
     REAL(REAL64) :: arsinh, div_const
-    REAL(REAL64) :: volt_scalar 
+    REAL(REAL64) :: volt_scalar
     
     !Calculates arsinh part
     div_const = cin/max_c
@@ -211,6 +214,8 @@ CONTAINS
     arsinh = farad*rr_coef*SQRT(div_const - (div_const**2))
     arsinh = volt_con_ial/arsinh
     arsinh = ASINH(arsinh)
+    
+    
     
     volt_scalar = U_scalar(div_const) - (volt_con_rtf*arsinh)
     
@@ -223,12 +228,13 @@ CONTAINS
     !an ARRAY INPUT of concentrations
     !and ESSENTIAL PARAMETERS
     
-    !TODO: Neaten up (prevent writing so many params, maybe incorporate into module itself?)
+   
     REAL(REAL64), DIMENSION(:), INTENT(IN) :: arrin
     
     REAL(REAL64), DIMENSION(:), ALLOCATABLE :: arsinh, div_const
     REAL(REAL64), DIMENSION(:), ALLOCATABLE :: volt_array
-    INTEGER :: size_arr
+    INTEGER :: size_arr, i
+
     
     IF (ALLOCATED(volt_array)) THEN
       DEALLOCATE(volt_array)
@@ -249,13 +255,20 @@ CONTAINS
    ALLOCATE(div_const(size_arr))
 
    !Calculates arsinh part
-   div_const = arrin/max_c
+  ! div_const = arrin/max_c
     
-   arsinh = farad*rr_coef*SQRT(div_const - (div_const**2))
-   arsinh = volt_con_ial/arsinh
-   arsinh = ASINH(arsinh)
+   !arsinh = farad*rr_coef*SQRT(div_const - (div_const**2))
+  ! arsinh = volt_con_ial/arsinh
+   !arsinh = ASINH(arsinh)
     
-   volt_array = U_arr(div_const) - (volt_con_rtf*arsinh)
+   !volt_array = U_arr(div_const) - (volt_con_rtf*arsinh)
+   
+   !$OMP parallel do default (shared) private(i, arsinh)
+   do i = 1, size_arr
+      volt_array(i) = volt_scalar(arrin(i))
+   end do 
+   
+   
     
  END FUNCTION volt_array
     

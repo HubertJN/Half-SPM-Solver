@@ -15,6 +15,7 @@ module input_output_netcdf
   integer(kind=int32)          :: sim_steps, out_steps, space_steps, tot_steps
   integer(kind=int32)          :: output_id, check_id
   integer(kind=int32)          :: volt_out_id, conc_out_id, conc_check_id, time_check_id, ts_check_id
+  logical                      :: volt_do, checkpoint
   
 contains
 
@@ -367,7 +368,7 @@ contains
 
     character(len=*), intent(in), optional :: file_name
     
-    integer(kind=int32)                    :: ierr, file_id, var_id
+    integer(kind=int32)                    :: ierr, file_id, var_id, volt_do_int, checkpoint_int
 
     if (present(file_name)) then
     
@@ -388,11 +389,16 @@ contains
     call assign_real(file_id, 'r', sing=dt, var_name='dt')
     call assign_real(file_id, 'r', sing=vol_per, var_name='vol_per')
     call assign_real(file_id, 'r', sing=area, var_name='area')
+    call assign_int(file_id, 'r', sing=volt_do_int, var_name='volt_do')
+    call assign_int(file_id, 'r', sing=checkpoint_int, var_name='checkpoint')
+
+    volt_do = volt_do_int
+    checkpoint = checkpoint_int
     
     
     ierr = nf90_close(file_id)
     call error_check(ierr)
-
+    print*, volt_do, checkpoint
     else
        sim_steps = 1000
        out_steps = 5
@@ -408,6 +414,8 @@ contains
        dt = 2e-9_DP
        vol_per = 66.5_DP
        area = 0.1027_DP
+       volt_do = .True.
+       checkpoint = .False.
     end if
     
   end subroutine import_input

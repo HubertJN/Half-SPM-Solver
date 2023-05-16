@@ -2,6 +2,7 @@ MODULE pde_solver
 
   USE ISO_FORTRAN_ENV
   use input_output_netcdf
+  !$ use OMP_lib
   
   IMPLICIT NONE
   real(kind=real64) :: rhs_const, volt_con_ial, volt_con_rtf
@@ -92,7 +93,7 @@ CONTAINS
     REAL(REAL64),   DIMENSION(:),   ALLOCATABLE             :: crank_nicholson
     REAL(REAL64),   DIMENSION(:,:), ALLOCATABLE             :: B_mod
     REAL(REAL64),   DIMENSION(:),   ALLOCATABLE             :: AL_mod, A_mod, AU_mod, rhs
-    INTEGER(INT32)                                          :: n, info, i
+    INTEGER(INT32)                                          :: n, info, i, j
     
     !Get size of input array
     n = space_steps
@@ -111,8 +112,16 @@ CONTAINS
     rhs = 0.0_REAL64
     crank_nicholson = 0.0_REAL64
     
-    !generate RHS
-    rhs = MATMUL(B,c_cur)
+    !generate RHS#
+    Do i=1, space_steps
+       Do j=1, space_steps
+          rhs(i) = rhs(i) + (B(j, i) * c_cur(j))
+       end do
+    end do
+    
+    !rhs = MATMUL(B,c_cur)
+
+
     rhs(n) = rhs(n) - rhs_const
 
     AL_mod = AL

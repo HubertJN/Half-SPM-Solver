@@ -29,7 +29,7 @@ PROGRAM main
   REAL(REAL64), ALLOCATABLE :: AL(:), A(:), AU(:), B(:,:)
   REAL(REAL64), ALLOCATABLE :: c_tmp(:), volt(:,:), conc(:,:)
   INTEGER :: i, j, quo, step_prog
-  LOGICAL :: checkpoint = .false., volt_do= .True. !test - default or not; voltage calcs or not
+  !LOGICAL :: checkpoint = .false., volt_do= .True. !test - default or not; voltage calcs or not
 
   integer(kind=int32) :: rate, ts, tc, conc_time, volt_time, write_time, total_time
 

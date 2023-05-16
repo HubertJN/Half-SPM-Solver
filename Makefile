@@ -6,7 +6,7 @@
 #Uncomment -03 to add compiler optimisation 
 compiler=gfortran #-03 -Wall -Wextra
 
-flags=`nf-config --fflags` #mpif90 -I/warwick/desktop/2018/software/libpng/1.6.37-GCCcore-8.3.0/include/
+flags=`nf-config --fflags` 
 
 libraries=`nf-config --flibs` -llapack -fopenmp
 
@@ -19,15 +19,27 @@ object=input_output_netcdf.o fd.o pde.o
 #set to 1 to run in serial
 num_threads=12
 
-
 #Compile line
+
 test.out: $(object)
-	$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
+		$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
+		
+ifeq ($(num_threads),1)		
+	@#automatically execute commands
+	./test.out
+	python3 plots.py
+	@#clean output files after visualisation is produced 
+	@#make clean
+else
 	@#automatically execute commands
 	OMP_NUM_THREADS=$(num_threads) ./test.out
 	python3 plots.py
 	@#clean output files after visualisation is produced 
 	@#make clean
+		
+endif
+		
+		
 
 #Checking if object files created 
 #ifeq ("$(wildcard $(./fd.o))","")

@@ -11,7 +11,7 @@ from matplotlib.animation import FuncAnimation
 # reading in the NetCDF data from SP_output.nc
 dat = NC.Dataset("SP_output.nc", "r", format="NETCDF4")
 do_volt = dat['volt_do'][:][0]
-print(do_volt)
+
 #creating figure and axes dependent on whether voltage data is to be written or not
 if do_volt == 1:
 	fig = plt.figure(figsize=(10,8))
@@ -151,7 +151,7 @@ if do_volt == 1:
 
 	# plotting the 2D graph and customising it
 	ax3.plot(time, volt)
-	ax3.set_xlabel('time [s]', size=8)
+	ax3.set_xlabel('Step Number', size=8)
 	ax3.xaxis.set_minor_locator(AutoMinorLocator())
 	ax3.tick_params(axis='x', labelsize=7)
 	ax3.set_ylabel('Voltage [V]', size=8)

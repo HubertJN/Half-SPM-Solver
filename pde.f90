@@ -5,12 +5,11 @@ MODULE pde_solver
   !$  use omp_lib
   
   IMPLICIT NONE
-  real(kind=real64) :: rhs_const, volt_con_ial, volt_con_rtf
+  real(kind=real64) :: rhs_const, volt_con_ial, volt_con_rtf, mod_dif
   
 CONTAINS
 
   subroutine setup_crank_nicholson(AL, A, AU, B)
-    implicit none
 
     REAL(REAL64), DIMENSION(:),   intent(inout) :: AL, A, AU
     REAL(REAL64), DIMENSION(:,:), intent(inout) :: B
@@ -24,10 +23,11 @@ CONTAINS
       STOP
     END IF
 
-    dr = rad/(REAL(space_steps-1, KIND=REAL64))
+    dr = 1.0_REAL64/(REAL(space_steps-1, KIND=REAL64))
 
     num = 3.0_REAL64*vol_per/(100.0_REAL64*rad)
-    iapp = c_rate*dt/area
+    mod_dif = dif_coef/(rad**2)
+    !iapp = c_rate*dt/area
     
     flux_param = iapp/(num*farad*thick)
     volt_con_ial = iapp/(num*thick)
@@ -41,7 +41,7 @@ CONTAINS
     DO i=2,n-1
       !>current radius and dimensionless parameter ai
       ri = REAL((i-1),KIND=REAL64)*dr
-      ai = dt*dif_coef/(2.0_REAL64*dr*ri)
+      ai = dt*mod_dif/(2.0_REAL64*dr*ri)
 
       div_const = ai*(ri/dr)
       
@@ -58,7 +58,7 @@ CONTAINS
    END DO
 
    !>smooth boundary conditions at r=0
-    ai = dt*dif_coef/(dr*dr)
+    ai = dt*mod_dif/(dr*dr)
     
     A(1) = 1.0_REAL64 + ai
     AU(1) = -ai
@@ -71,7 +71,7 @@ CONTAINS
     B(n,n-1) = ai
     B(n,n) = 1.0_REAL64 - ai
 
-    rhs_const = 2.0_REAL64*flux_param*(dt/rad + dt/dr)
+    rhs_const = 2.0_REAL64*flux_param*(dt + dt/dr)
     
   end subroutine setup_crank_nicholson
     

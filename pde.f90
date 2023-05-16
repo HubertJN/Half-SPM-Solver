@@ -114,24 +114,22 @@ CONTAINS
     rhs = 0.0_REAL64
     crank_nicholson = 0.0_REAL64
     
-    !call omp_set_num_threads(4)
-    
-    
-    !generate RHS
-    !$OMP parallel do default (shared) private(i,j)
-    Do i=1, space_steps
-       Do j=1, space_steps
-          rhs(i) = rhs(i) + (B(j, i) * c_cur(j))
-       end do
-    end do
-    
-    !rhs = MATMUL(B,c_cur)
-   
-    rhs(n) = rhs(n) - rhs_const
-
+    !B_mod = B
     AL_mod = AL
     A_mod = A
     AU_mod = AU
+    
+    !generate RHS
+    !!$OMP parallel do default (shared) private(i,j)
+    !Do i=1, space_steps
+    !   Do j=1, space_steps
+    !      rhs(i) = rhs(i) + (B(i, j) * c_cur(j))
+    !   end do
+    !end do
+    
+    rhs = MATMUL(B,c_cur)
+   
+    rhs(n) = rhs(n) - rhs_const
     
     !dgtsv solver
     CALL dgtsv(n,1,AL_mod,A_mod,AU_mod,rhs,n,info)

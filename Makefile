@@ -4,7 +4,7 @@
 
 #Fortran compiler & flags 
 #Uncomment -02 to add compiler optimisation 
-compiler=gfortran #-02 -Wall -Wextra
+compiler=gfortran -std=f2008 #-02 -Wall -Wextra
 
 flags=`nf-config --fflags` #mpif90 -I/warwick/desktop/2018/software/libpng/1.6.37-GCCcore-8.3.0/include/
 
@@ -24,7 +24,7 @@ test.out: $(object)
 	./test.out
 	python3 plots.py
 	#clean output files after visualisation is produced 
-	make clean
+	#make clean
 	
 	
 #Checking if object files created 

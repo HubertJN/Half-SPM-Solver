@@ -116,6 +116,7 @@ CONTAINS
     
     
     !generate RHS
+    
     rhs = MATMUL(B,c_cur)
     rhs(n) = rhs(n) - rhs_const
 
@@ -257,7 +258,7 @@ CONTAINS
    
    !$OMP parallel do default (shared) private(i, arsinh)
    do i = 1, size_arr
-  	 volt_array(i) = volt_scalar(arrin(i))
+      volt_array(i) = volt_scalar(arrin(i))
    end do 
    
    

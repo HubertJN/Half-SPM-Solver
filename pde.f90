@@ -41,7 +41,7 @@ CONTAINS
     DO i=2,n-1
       !>current radius and dimensionless parameter ai
       ri = REAL((i-1),KIND=REAL64)*dr
-      ai = dt*dif_coef/(2.0_REAL64*dr*ri)
+      ai = dt*mod_dif/(2.0_REAL64*dr*ri)
 
       div_const = ai*(ri/dr)
       
@@ -58,7 +58,7 @@ CONTAINS
    END DO
 
    !>smooth boundary conditions at r=0
-    ai = dt*dif_coef/(dr*dr)
+    ai = dt*mod_dif/(dr*dr)
     
     A(1) = 1.0_REAL64 + ai
     AU(1) = -ai
@@ -71,7 +71,7 @@ CONTAINS
     B(n,n-1) = ai
     B(n,n) = 1.0_REAL64 - ai
 
-    rhs_const = 2.0_REAL64*flux_param*(dt/rad + dt/dr)
+    rhs_const = 2.0_REAL64*flux_param*(dt + dt/dr)
     
   end subroutine setup_crank_nicholson
     

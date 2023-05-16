@@ -6,18 +6,22 @@
 #Uncomment -03 to add compiler optimisation 
 compiler=gfortran #-03 -Wall -Wextra
 
+#set to 1 to run in serial
+num_threads=1
+
 flags=`nf-config --fflags` 
 
-libraries=`nf-config --flibs` -llapack -fopenmp
+ifeq ($(num_threads),1)	
+	libraries=`nf-config --flibs` -llapack 
+else 
+	libraries=`nf-config --flibs` -llapack -fopenmp
+endif
 
 main=main.f90
 
 exe=test.out
 
 object=input_output_netcdf.o fd.o pde.o
-
-#set to 1 to run in serial
-num_threads=12
 
 #Compile line
 
@@ -30,12 +34,16 @@ ifeq ($(num_threads),1)
 	python3 plots.py
 	@#clean output files after visualisation is produced 
 	@#make clean
+	@#echo "num_threads=" $(num_threads)
+	@echo "Serial code running"
+	
 else
 	@#automatically execute commands
 	OMP_NUM_THREADS=$(num_threads) ./test.out
 	python3 plots.py
 	@#clean output files after visualisation is produced 
 	@#make clean
+	@echo "Parallelising. Number of threads = " $(num_threads)
 		
 endif
 		
@@ -58,7 +66,7 @@ endif
 
 
 ifeq ("$(wildcard $(./input_output_netcdf.o))","")
-	@echo "Input ready"
+	@echo "Input successful"
 else
 	@echo "Input failed"
 endif	

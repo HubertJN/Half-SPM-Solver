@@ -16,6 +16,7 @@ module input_output_netcdf
   integer(kind=int32)          :: output_id, check_id
   integer(kind=int32)          :: volt_out_id, conc_out_id, conc_check_id, time_check_id, ts_check_id
   logical                      :: volt_do, checkpoint
+  integer(kind=int32)          :: volt_do_int, checkpoint_int
   
 contains
 
@@ -368,7 +369,7 @@ contains
 
     character(len=*), intent(in), optional :: file_name
     
-    integer(kind=int32)                    :: ierr, file_id, var_id, volt_do_int, checkpoint_int
+    integer(kind=int32)                    :: ierr, file_id, var_id
 
     if (present(file_name)) then
     
@@ -392,9 +393,17 @@ contains
     call assign_int(file_id, 'r', sing=volt_do_int, var_name='volt_do')
     call assign_int(file_id, 'r', sing=checkpoint_int, var_name='checkpoint')
 
-    volt_do = volt_do_int
-    checkpoint = checkpoint_int
+    if (volt_do_int == 1) then
+       volt_do = .True.
+    else
+       volt_do = .False.
+    end if
     
+    if (checkpoint_int == 1) then
+       checkpoint = .True.
+    else
+       checkpoint = .False.
+    end if
     
     ierr = nf90_close(file_id)
     call error_check(ierr)
@@ -445,7 +454,9 @@ contains
     call create_sing_var('dt',          nf90_double, 1, output_id, 's')
     call create_sing_var('vol_per',     nf90_double, 1, output_id, '%')
     call create_sing_var('area',        nf90_double, 1, output_id, '$m^2$')
-
+    call create_sing_var('volt_do',     nf90_int,    1, output_id)
+    call create_sing_var('checkpoint',  nf90_int,    1, output_id)
+    
     call create_exp_var('conc', nf90_double, space_steps, output_id, '$mol m^{-3}$', var_id_out=conc_out_id)
 
     ierr = nf90_enddef(output_id)
@@ -465,6 +476,8 @@ contains
     call assign_real(output_id, 'w', sing=dt, var_name='dt')
     call assign_real(output_id, 'w', sing=vol_per, var_name='vol_per')
     call assign_real(output_id, 'w', sing=area, var_name='area')
+    call assign_int(output_id,  'w', sing=volt_do_int, var_name='volt_do')
+    call assign_int(output_id,  'w', sing=checkpoint_int, var_name='checkpoint')
 
     tot_steps = 0
     final_time = 0.0
@@ -522,7 +535,6 @@ contains
     call assign_real(check_id, 'r', sing=final_time, var_name='time', var_id_out=time_check_id)
     call assign_real(check_id, 'r', vect=conc, var_name='conc', var_id_out=conc_check_id)
     call assign_int(check_id, 'r', sing=tot_steps, var_name='tot_steps', var_id_out=ts_check_id)
-    print*, tot_steps
 
     ierr = nf90_open(out_file_name, NF90_WRITE, output_id)
     call error_check(ierr)

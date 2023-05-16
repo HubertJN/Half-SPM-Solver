@@ -39,25 +39,25 @@ CONTAINS
     B = 0.0_REAL64
 
     DO i=2,n-1
-      !current radius and dimensionless parameter ai
+      !>current radius and dimensionless parameter ai
       ri = REAL((i-1),KIND=REAL64)*dr
       ai = dt*dif_coef/(2.0_REAL64*dr*ri)
 
       div_const = ai*(ri/dr)
       
-      !LHS
+      !>LHS
       AL(i-1) = ai - div_const
       A(i) = 1.0_REAL64 + 2.0_REAL64*div_const
       AU(i) = -ai - div_const
       
-      !RHS
+      !>RHS
       B(i,i-1) = div_const - ai
       B(i,i) = 1.0_REAL64 - 2.0_REAL64*div_const
       B(i,i+1) = ai + div_const
       
    END DO
 
-   !smooth boundary conditions at r=0
+   !>smooth boundary conditions at r=0
     ai = dt*dif_coef/(dr*dr)
     
     A(1) = 1.0_REAL64 + ai
@@ -65,7 +65,7 @@ CONTAINS
     B(1,1) = 1.0_REAL64 - ai
     B(1,2) = ai
     
-    !flux boundary conditions
+    !>flux boundary conditions
     AL(n-1) = -ai
     A(n) = 1.0_REAL64 + ai
     B(n,n-1) = ai
@@ -77,15 +77,17 @@ CONTAINS
     
   FUNCTION crank_nicholson(AL, A, AU, B, c_cur)
   
-    !solves the diffusion equation with constant diffusion coefficient
-    !using the Crank-Nicholson algorithm
-    !via the LAPACK library dgtsv function for tridiagonal matrices
-    !evolves the given state by one timestep
+    !>solves the diffusion equation with constant diffusion coefficient
+    !!using the Crank-Nicholson algorithm
+    !!via the LAPACK library dgtsv function for tridiagonal matrices
+    !!evolves the given state by one timestep
     
-    !rad - max radius of the geometry
-    !dif_coef - the diffusion coefficient
-    !dt - the timestep
-    !c_cur - the current concentration vector in in out
+    !> @brief Crank-Nicolson parameters
+    !!
+    !! @param[in] rad - max radius of the geometry
+    !! @param[in] dif_coef - the diffusion coefficient
+    !! @param[in] dt - the timestep
+    !! @param[in] c_cur - the current concentration vector in in out
     
     REAL(REAL64),   DIMENSION(:),                INTENT(IN) :: c_cur, AL, A, AU
     REAL(REAL64),   DIMENSION(:,:), ALLOCATABLE, intent(in) :: B
@@ -192,16 +194,18 @@ CONTAINS
   
   FUNCTION volt_scalar(cin)!, Rg, T, F, iapp, a, L, K, cmax)
   
-    !Calculates scalar voltage when given 
-    !a SCALAR INPUT of concentration
-    !and ESSENTIAL PARAMETERS
+    !>Calculates scalar voltage when given 
+    !!a SCALAR INPUT of concentration
+    !!and ESSENTIAL PARAMETERS
     
-    !Rg = 'gas_con'
-    !T = 'temp'
-    !F = 'farad'
-    !L = 'thick'
-    !K = 'rr_coef'
-    !cmax = 'max_c'
+    !> @brief Scalar voltage calculator
+    !!
+    !! @param[in] Rg - ideal gas coefficient
+    !! @param[in] T - temperature
+    !! @param[in] F  - faraday constant
+    !! @param[in] L - electrode thickness
+    !! @param[in] K - reaction rate coefficient
+    !! @param[in] cmax - maximum concentration
     
     !TODO: Neaten up (prevent writing so many params, maybe incorporate into module itself?)
     REAL(REAL64), INTENT(IN) :: cin
@@ -224,9 +228,9 @@ CONTAINS
   
   FUNCTION volt_array(arrin)
     
-    !Calculates an array of voltages when given 
-    !an ARRAY INPUT of concentrations
-    !and ESSENTIAL PARAMETERS
+    !>Calculates an array of voltages when given 
+    !!an ARRAY INPUT of concentrations
+    !!and ESSENTIAL PARAMETERS
     
    
     REAL(REAL64), DIMENSION(:), INTENT(IN) :: arrin
@@ -255,10 +259,10 @@ CONTAINS
    ALLOCATE(div_const(size_arr))
 
    !Calculates arsinh part
-  ! div_const = arrin/max_c
+   !div_const = arrin/max_c
     
    !arsinh = farad*rr_coef*SQRT(div_const - (div_const**2))
-  ! arsinh = volt_con_ial/arsinh
+   !arsinh = volt_con_ial/arsinh
    !arsinh = ASINH(arsinh)
     
    !volt_array = U_arr(div_const) - (volt_con_rtf*arsinh)

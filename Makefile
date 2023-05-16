@@ -3,8 +3,8 @@
 ########################################
 
 #Fortran compiler & flags 
-#Uncomment -02 to add compiler optimisation 
-compiler=gfortran #-02 -Wall -Wextra
+#Uncomment -03 to add compiler optimisation 
+compiler=gfortran #-03 -Wall -Wextra
 
 flags=`nf-config --fflags` #mpif90 -I/warwick/desktop/2018/software/libpng/1.6.37-GCCcore-8.3.0/include/
 
@@ -16,17 +16,18 @@ exe=test.out
 
 object=input_output_netcdf.o fd.o pde.o
 
+num_threads=12
+
 
 #Compile line
 test.out: $(object)
 	$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
 	@#automatically execute commands
-	./test.out
+	OMP_NUM_THREADS=$(num_threads) ./test.out
 	python3 plots.py
 	@#clean output files after visualisation is produced 
 	@#make clean
-	
-	
+
 #Checking if object files created 
 #ifeq ("$(wildcard $(./fd.o))","")
 #	@echo "FD solver ready"
@@ -49,7 +50,6 @@ else
 	@echo "Input failed"
 endif	
 
-	
 #Checking the compilation status
 ifeq ("$(wildcard $(./test.out))","")
 	@echo "Compilation sucessful"
@@ -64,15 +64,12 @@ clean:
 	rm -f SP_output.nc
 	rm -f SP_check.chp
 	@echo "Files removed"
-	
+
 #Remove the build files but keep the output 
 checkpoint:
 	rm -f *.o *.mod $(exe)
 	@echo "Files removed"
-	
+
 #Rules for building object files
 %.o: %.f90
 	$(compiler) $(flags) -c $< $(libraries) -o $@
-	
-
-	

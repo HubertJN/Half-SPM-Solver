@@ -10,8 +10,8 @@ module input_output_netcdf
   real(kind=Real64), parameter :: farad = 96485.3321233100184_DP !C/mol
   real(kind=Real64), parameter :: gas_con = 8.31446261815324_DP !J/(K.mol)
   
-  real(kind=Real64)            :: temp, rad, thick, rr_coef, dif_coef, area
-  real(kind=Real64)            :: init_c, max_c, c_rate, dt, vol_per, final_time
+  real(kind=Real64)            :: temp, rad, thick, rr_coef, dif_coef, iapp !, c_rate, area
+  real(kind=Real64)            :: init_c, max_c, dt, vol_per, final_time
   integer(kind=int32)          :: sim_steps, out_steps, space_steps, tot_steps
   integer(kind=int32)          :: output_id, check_id
   integer(kind=int32)          :: volt_out_id, conc_out_id, conc_check_id, time_check_id, ts_check_id
@@ -386,12 +386,13 @@ contains
     call assign_real(file_id, 'r', sing=dif_coef, var_name='dif_coef')
     call assign_real(file_id, 'r', sing=init_c, var_name='init_c')
     call assign_real(file_id, 'r', sing=max_c, var_name='max_c')
-    call assign_real(file_id, 'r', sing=c_rate, var_name='c_rate')
+    !call assign_real(file_id, 'r', sing=c_rate, var_name='c_rate')
     call assign_real(file_id, 'r', sing=dt, var_name='dt')
     call assign_real(file_id, 'r', sing=vol_per, var_name='vol_per')
-    call assign_real(file_id, 'r', sing=area, var_name='area')
+    !call assign_real(file_id, 'r', sing=area, var_name='area')
     call assign_int(file_id, 'r', sing=volt_do_int, var_name='volt_do')
     call assign_int(file_id, 'r', sing=checkpoint_int, var_name='checkpoint')
+    call assign_real(file_id, 'r', sing=iapp, var_name='iapp')
 
     if (volt_do_int == 1) then
        volt_do = .True.
@@ -407,7 +408,7 @@ contains
     
     ierr = nf90_close(file_id)
     call error_check(ierr)
-    print*, volt_do, checkpoint
+
     else
        sim_steps = 1000
        out_steps = 5
@@ -419,10 +420,11 @@ contains
        dif_coef = 1.48e-15_DP
        init_c = 51765.0_DP
        max_c = 51765.0_DP
-       c_rate = 0.001_DP
+       !c_rate = 0.001_DP
        dt = 2e-9_DP
        vol_per = 66.5_DP
-       area = 0.1027_DP
+       !area = 0.1027_DP
+       iapp = 48.685491723466406_DP
        volt_do = .True.
        checkpoint = .False.
     end if
@@ -450,12 +452,13 @@ contains
     call create_sing_var('dif_coef',    nf90_double, 1, output_id, '$10^{-15} m^2 s^{-1}$')
     call create_sing_var('init_c',      nf90_double, 1, output_id, '$mol m^{-3}$')
     call create_sing_var('max_c',       nf90_double, 1, output_id, '$mol m^{-3}$')
-    call create_sing_var('c_rate',      nf90_double, 1, output_id, 'A/s')
+    !call create_sing_var('c_rate',      nf90_double, 1, output_id, 'A/s')
     call create_sing_var('dt',          nf90_double, 1, output_id, 's')
     call create_sing_var('vol_per',     nf90_double, 1, output_id, '%')
-    call create_sing_var('area',        nf90_double, 1, output_id, '$m^2$')
+    !call create_sing_var('area',        nf90_double, 1, output_id, '$m^2$')
     call create_sing_var('volt_do',     nf90_int,    1, output_id)
     call create_sing_var('checkpoint',  nf90_int,    1, output_id)
+    call create_sing_var('iapp',        nf90_double, 1, output_id, '$A/m^2$')
     
     call create_exp_var('conc', nf90_double, space_steps, output_id, '$mol m^{-3}$', var_id_out=conc_out_id)
 
@@ -472,12 +475,13 @@ contains
     call assign_real(output_id, 'w', sing=dif_coef, var_name='dif_coef')
     call assign_real(output_id, 'w', sing=init_c, var_name='init_c')
     call assign_real(output_id, 'w', sing=max_c, var_name='max_c')
-    call assign_real(output_id, 'w', sing=c_rate, var_name='c_rate')
+    !call assign_real(output_id, 'w', sing=c_rate, var_name='c_rate')
     call assign_real(output_id, 'w', sing=dt, var_name='dt')
     call assign_real(output_id, 'w', sing=vol_per, var_name='vol_per')
-    call assign_real(output_id, 'w', sing=area, var_name='area')
+    !call assign_real(output_id, 'w', sing=area, var_name='area')
     call assign_int(output_id,  'w', sing=volt_do_int, var_name='volt_do')
     call assign_int(output_id,  'w', sing=checkpoint_int, var_name='checkpoint')
+    call assign_real(output_id, 'w', sing=iapp, var_name='iapp')
 
     tot_steps = 0
     final_time = 0.0

@@ -25,7 +25,7 @@ PROGRAM main
   
   !temporary
   CHARACTER(LEN=12) :: loadname = "SPM_input.nc", outname = "SP_output.nc", checkname='SP_check.chp'
-  REAL(REAL64) :: con, iapp, flux_param
+  REAL(REAL64) :: con, flux_param !, iapp
   REAL(REAL64), ALLOCATABLE :: AL(:), A(:), AU(:), B(:,:)
   REAL(REAL64), ALLOCATABLE :: c_tmp(:), volt(:,:), conc(:,:)
   INTEGER :: i, j, quo, step_prog
@@ -108,7 +108,7 @@ PROGRAM main
   
   !>Calculate parameters to be used later
   con = 3.0_REAL64*vol_per/(100.0_REAL64*rad)
-  iapp = c_rate*dt/area
+  !iapp = c_rate*dt/area
   flux_param = iapp/(con*farad*thick)
 
   !>If doing a voltage calculation you need to create a voltage variable in the output file, calculate it, and write it the output file

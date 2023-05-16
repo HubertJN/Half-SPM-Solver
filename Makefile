@@ -3,8 +3,8 @@
 ########################################
 
 #Fortran compiler & flags 
-#Uncomment -03 to add compiler optimisation 
-compiler=gfortran #-03 -Wall -Wextra
+#Uncomment -O3 to add compiler optimisation 
+compiler=gfortran #-O3 #-Wall -Wextra
 
 #set to 1 to run in serial
 num_threads=1
@@ -24,10 +24,9 @@ exe=test.out
 object=input_output_netcdf.o fd.o pde.o
 
 #Compile line
-
 test.out: $(object)
 		$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
-		
+
 ifeq ($(num_threads),1)		
 	@#automatically execute commands
 	./test.out
@@ -36,7 +35,7 @@ ifeq ($(num_threads),1)
 	@#make clean
 	@#echo "num_threads=" $(num_threads)
 	@echo "Serial code running"
-	
+
 else
 	@#automatically execute commands
 	OMP_NUM_THREADS=$(num_threads) ./test.out
@@ -44,10 +43,9 @@ else
 	@#clean output files after visualisation is produced 
 	@#make clean
 	@echo "Parallelising. Number of threads = " $(num_threads)
-		
+
 endif
-		
-		
+
 
 #Checking if object files created 
 #ifeq ("$(wildcard $(./fd.o))","")
@@ -55,7 +53,6 @@ endif
 #else
 #	@echo "FD solver failed"
 #endif	
-
 
 
 ifeq ("$(wildcard $(./pde.o))","")
@@ -70,6 +67,7 @@ ifeq ("$(wildcard $(./input_output_netcdf.o))","")
 else
 	@echo "Input failed"
 endif	
+
 
 #Checking the compilation status
 ifeq ("$(wildcard $(./test.out))","")
@@ -86,10 +84,12 @@ clean:
 	rm -f SP_check.chp
 	@echo "Files removed"
 
+
 #Remove the build files but keep the output 
 checkpoint:
 	rm -f *.o *.mod $(exe)
 	@echo "Files removed"
+
 
 #Rules for building object files
 %.o: %.f90

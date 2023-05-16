@@ -27,7 +27,8 @@ else:
 # Subplot 1 - Animtion of lithium concentration 
 # accessing the 2d concentration data and creating a time and space axis
 c = dat['conc'][:]
-t_steps = dat['sim_steps'][:][0]
+
+t_steps = np.shape(c)[0]
 r_steps = dat['space_steps'][:][0]
 rad = dat['rad'][:][0]*10**(6)
 time_axis = np.linspace(0, t_steps-1, t_steps-1).astype(int)

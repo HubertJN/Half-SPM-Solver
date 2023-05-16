@@ -4,7 +4,7 @@
 
 #Fortran compiler & flags 
 #Uncomment -02 to add compiler optimisation 
-compiler=gfortran #-std=f2008 #-02 -Wall -Wextra
+compiler=gfortran #-02 -Wall -Wextra
 
 flags=`nf-config --fflags` #mpif90 -I/warwick/desktop/2018/software/libpng/1.6.37-GCCcore-8.3.0/include/
 
@@ -28,11 +28,11 @@ test.out: $(object)
 	
 	
 #Checking if object files created 
-ifeq ("$(wildcard $(./fd.o))","")
-	@echo "FD solver ready"
-else
-	@echo "FD solver failed"
-endif	
+#ifeq ("$(wildcard $(./fd.o))","")
+#	@echo "FD solver ready"
+#else
+#	@echo "FD solver failed"
+#endif	
 
 
 

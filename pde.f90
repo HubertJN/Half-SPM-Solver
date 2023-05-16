@@ -1,57 +1,104 @@
 MODULE pde_solver
 
   USE ISO_FORTRAN_ENV
+  use input_output_netcdf
+  !$  use omp_lib
   
   IMPLICIT NONE
+  real(kind=real64) :: rhs_const, volt_con_ial, volt_con_rtf, mod_dif
+  mod_dif = dif_coef/(rad**2)
   
-  CONTAINS
-  
-  FUNCTION crank_nicholson(rad,dif_coef,flux_param,dt,c_cur)
-  
-    !solves the diffusion equation with constant diffusion coefficient
-    !using the Crank-Nicholson algorithm
-    !via the LAPACK library dgtsv function for tridiagonal matrices
-    !evolves the given state by one timestep
-    
-    !rad - max radius of the geometry
-    !dif_coef - the diffusion coefficient
-    !flux_param - equals to iapp/(aFL), needs to be calculated beforehand!
-    !dt - the timestep
-    !c_cur - the current concentration vector in in out
-    
-    REAL(REAL64), INTENT(IN) :: rad, dif_coef, flux_param, dt
-    REAL(REAL64), DIMENSION(:), INTENT(IN) :: c_cur
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: crank_nicholson
-    REAL(REAL64), DIMENSION(:,:), ALLOCATABLE :: B                              !evolution matrix
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: AL, A, AU, rhs                   !lhs and rhs of equation
-    REAL(REAL64) :: dr, ri, ai                                                  !spacestep, current radius, parameter
-    INTEGER :: i                                                                !loop variables
-    INTEGER :: n, info                                                          !size of array and dgtsv info
-    
-    !Get size of input array
-    n = SIZE(c_cur)
-    
+CONTAINS
+
+  subroutine setup_crank_nicholson(AL, A, AU, B)
+
+    REAL(REAL64), DIMENSION(:),   intent(inout) :: AL, A, AU
+    REAL(REAL64), DIMENSION(:,:), intent(inout) :: B
+
+    REAL(REAL64)                                :: ai, ri, num, iapp, flux_param, div_const, dr
+    integer(int32)                              :: n, i
+
+    n = space_steps
     IF (n < 2) THEN
       PRINT *, "Warning: Invalid input - input array size is less than 2. Terminating." 
       STOP
     END IF
+
+    dr = 1.0_REAL64/(REAL(space_steps-1, KIND=REAL64))
+
+    num = 3.0_REAL64*vol_per/(100.0_REAL64*rad)
+    !iapp = c_rate*dt/area
     
-    !Check status of allocatables and deallocate as required
-    IF (ALLOCATED(AL)) THEN
-      DEALLOCATE(AL)
-    END IF
+    flux_param = iapp/(num*farad*thick)
+    volt_con_ial = iapp/(num*thick)
+    volt_con_rtf = (2.0_REAL64*gas_con*temp)/farad
+
+    AL = 0.0_REAL64
+    A = 0.0_REAL64
+    AU = 0.0_REAL64
+    B = 0.0_REAL64
+
+    DO i=2,n-1
+      !>current radius and dimensionless parameter ai
+      ri = REAL((i-1),KIND=REAL64)*dr
+      ai = dt*dif_coef/(2.0_REAL64*dr*ri)
+
+      div_const = ai*(ri/dr)
+      
+      !>LHS
+      AL(i-1) = ai - div_const
+      A(i) = 1.0_REAL64 + 2.0_REAL64*div_const
+      AU(i) = -ai - div_const
+      
+      !>RHS
+      B(i,i-1) = div_const - ai
+      B(i,i) = 1.0_REAL64 - 2.0_REAL64*div_const
+      B(i,i+1) = ai + div_const
+      
+   END DO
+
+   !>smooth boundary conditions at r=0
+    ai = dt*dif_coef/(dr*dr)
     
-    IF (ALLOCATED(A)) THEN
-      DEALLOCATE(A)
-    END IF
+    A(1) = 1.0_REAL64 + ai
+    AU(1) = -ai
+    B(1,1) = 1.0_REAL64 - ai
+    B(1,2) = ai
     
-    IF (ALLOCATED(AU)) THEN
-      DEALLOCATE(AU)
-    END IF
+    !>flux boundary conditions
+    AL(n-1) = -ai
+    A(n) = 1.0_REAL64 + ai
+    B(n,n-1) = ai
+    B(n,n) = 1.0_REAL64 - ai
+
+    rhs_const = 2.0_REAL64*flux_param*(dt/rad + dt/dr)
     
-    IF(ALLOCATED(B)) THEN
-      DEALLOCATE(B)
-    END IF
+  end subroutine setup_crank_nicholson
+    
+  FUNCTION crank_nicholson(AL, A, AU, B, c_cur)
+  
+    !>solves the diffusion equation with constant diffusion coefficient
+    !!using the Crank-Nicholson algorithm
+    !!via the LAPACK library dgtsv function for tridiagonal matrices
+    !!evolves the given state by one timestep
+    
+    !> @brief Crank-Nicolson parameters
+    !!
+    !! @param[in] rad - max radius of the geometry
+    !! @param[in] dif_coef - the diffusion coefficient
+    !! @param[in] dt - the timestep
+    !! @param[in] c_cur - the current concentration vector in in out
+    
+    REAL(REAL64),   DIMENSION(:),                INTENT(IN) :: c_cur, AL, A, AU
+    REAL(REAL64),   DIMENSION(:,:), ALLOCATABLE, intent(in) :: B
+     
+    REAL(REAL64),   DIMENSION(:),   ALLOCATABLE             :: crank_nicholson
+    REAL(REAL64),   DIMENSION(:,:), ALLOCATABLE             :: B_mod
+    REAL(REAL64),   DIMENSION(:),   ALLOCATABLE             :: AL_mod, A_mod, AU_mod, rhs
+    INTEGER(INT32)                                          :: n, info, i, j
+    
+    !Get size of input array
+    n = space_steps
     
     IF(ALLOCATED(rhs)) THEN
       DEALLOCATE(rhs)
@@ -61,65 +108,33 @@ MODULE pde_solver
       DEALLOCATE(crank_nicholson)
     END IF
     
-    !Allocate arrays
-    ALLOCATE(AL(n-1))
-    ALLOCATE(A(n))
-    ALLOCATE(AU(n-1))
-    ALLOCATE(B(n,n))
     ALLOCATE(rhs(n))
     ALLOCATE(crank_nicholson(n))
     
-    !initialise arrays
-    AL = 0.0_REAL64
-    A = 0.0_REAL64
-    AU = 0.0_REAL64
-    B = 0.0_REAL64
     rhs = 0.0_REAL64
-    !crank_nicholson = 0.0_REAL64
+    crank_nicholson = 0.0_REAL64
     
-    !calculate space-step and evolution parameter
-    dr = rad/(REAL(n-1, KIND=REAL64))
+    !call omp_set_num_threads(4)
     
-    !set array values
-    !so that A*crank = B*c_cur is the equation of evolution
-    
-    DO i=2,n-1
-      !current radius and dimensionless parameter ai
-      ri = REAL((i-1),KIND=REAL64)*dr
-      ai = dt*dif_coef/(2.0_REAL64*dr*ri)
-      
-      !LHS
-      AL(i-1) = ai*(1.0_REAL64 - ri/dr)
-      A(i) = 1.0_REAL64 + ai*2.0_REAL64*ri/dr
-      AU(i) = ai*(-1.0_REAL64 - ri/dr)
-      
-      !RHS
-      B(i,i-1) = ai*(ri/dr - 1.0_REAL64)
-      B(i,i) = 1.0_REAL64 - ai*2.0_REAL64*ri/dr
-      B(i,i+1) = ai*(1.0_REAL64 + ri/dr)
-      
-    END DO
-    
-    !smooth boundary conditions at r=0
-    ai = dt*dif_coef/(dr*dr)
-    
-    A(1) = 1.0_REAL64 + ai
-    AU(1) = -1.0_REAL64*ai
-    B(1,1) = 1.0_REAL64 - ai
-    B(1,2) = ai
-    
-    !flux boundary conditions
-    AL(n-1) = -1.0_REAL64*ai
-    A(n) = 1.0_REAL64 + ai
-    B(n,n-1) = ai
-    B(n,n) = 1.0_REAL64 - ai
     
     !generate RHS
-    rhs = MATMUL(B,c_cur)
-    rhs(n) = rhs(n) - 2.0_REAL64*flux_param*(dt/rad + dt/dr)
+    !$OMP parallel do default (shared) private(i,j)
+    Do i=1, space_steps
+       Do j=1, space_steps
+          rhs(i) = rhs(i) + (B(j, i) * c_cur(j))
+       end do
+    end do
+    
+    !rhs = MATMUL(B,c_cur)
+   
+    rhs(n) = rhs(n) - rhs_const
+
+    AL_mod = AL
+    A_mod = A
+    AU_mod = AU
     
     !dgtsv solver
-    CALL dgtsv(n,1,AL,A,AU,rhs,n,info)
+    CALL dgtsv(n,1,AL_mod,A_mod,AU_mod,rhs,n,info)
     
     !Error handling - crude at this stage
     IF (info < 0) THEN
@@ -177,46 +192,53 @@ MODULE pde_solver
   END FUNCTION U_arr
   
   
-  FUNCTION volt_scalar(cin, Rg, T, F, iapp, a, L, K, cmax)
+  FUNCTION volt_scalar(cin)!, Rg, T, F, iapp, a, L, K, cmax)
   
-    !Calculates scalar voltage when given 
-    !a SCALAR INPUT of concentration
-    !and ESSENTIAL PARAMETERS
+    !>Calculates scalar voltage when given 
+    !!a SCALAR INPUT of concentration
+    !!and ESSENTIAL PARAMETERS
     
-    !Rg = 'gas_con'
-    !T = 'temp'
-    !F = 'farad'
-    !L = 'thick'
-    !K = 'rr_coef'
-    !cmax = 'max_c'
+    !> @brief Scalar voltage calculator
+    !!
+    !! @param[in] Rg - ideal gas coefficient
+    !! @param[in] T - temperature
+    !! @param[in] F  - faraday constant
+    !! @param[in] L - electrode thickness
+    !! @param[in] K - reaction rate coefficient
+    !! @param[in] cmax - maximum concentration
     
     !TODO: Neaten up (prevent writing so many params, maybe incorporate into module itself?)
-    REAL(REAL64), INTENT(IN) :: cin, Rg, T, F, iapp, a, L, K, cmax
-    REAL(REAL64) :: arsinh
-    REAL(REAL64) :: volt_scalar 
+    REAL(REAL64), INTENT(IN) :: cin
+    REAL(REAL64) :: arsinh, div_const
+    REAL(REAL64) :: volt_scalar
     
     !Calculates arsinh part
-    arsinh = F*K*SQRT((cin/cmax)*(1.0_REAL64 - cin/cmax))          !jc
-    arsinh = iapp/(a*L*arsinh)                                     !argument of arsinh
-    arsinh = LOG(arsinh + SQRT(arsinh**2.0_REAL64 + 1.0_REAL64))   !arsinh
+    div_const = cin/max_c
     
-    volt_scalar = U_scalar(cin/cmax) - (2.0_REAL64*Rg*T/F)*arsinh
+    arsinh = farad*rr_coef*SQRT(div_const - (div_const**2))
+    arsinh = volt_con_ial/arsinh
+    arsinh = ASINH(arsinh)
+    
+    
+    
+    volt_scalar = U_scalar(div_const) - (volt_con_rtf*arsinh)
     
   END FUNCTION volt_scalar
   
   
-  FUNCTION volt_array(arrin, Rg, T, F, iapp, a, L, K, cmax)
+  FUNCTION volt_array(arrin)
     
-    !Calculates an array of voltages when given 
-    !an ARRAY INPUT of concentrations
-    !and ESSENTIAL PARAMETERS
+    !>Calculates an array of voltages when given 
+    !!an ARRAY INPUT of concentrations
+    !!and ESSENTIAL PARAMETERS
     
-    !TODO: Neaten up (prevent writing so many params, maybe incorporate into module itself?)
+   
     REAL(REAL64), DIMENSION(:), INTENT(IN) :: arrin
-    REAL(REAL64), INTENT(IN) :: Rg, T, F, iapp, a, L, K, cmax
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: arsinh
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: volt_array 
-    INTEGER :: size_arr
+    
+    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: arsinh, div_const
+    REAL(REAL64), DIMENSION(:), ALLOCATABLE :: volt_array
+    INTEGER :: size_arr, i
+
     
     IF (ALLOCATED(volt_array)) THEN
       DEALLOCATE(volt_array)
@@ -224,20 +246,34 @@ MODULE pde_solver
     
     IF (ALLOCATED(arsinh)) THEN
       DEALLOCATE(arsinh)
-    END IF
+   END IF
+
+   IF (ALLOCATED(div_const)) THEN
+      DEALLOCATE(div_const)
+   END IF
     
-    size_arr = SIZE(arrin)
+   size_arr = SIZE(arrin)
     
-    ALLOCATE(volt_array(size_arr))
-    ALLOCATE(arsinh(size_arr))
+   ALLOCATE(volt_array(size_arr))
+   ALLOCATE(arsinh(size_arr))
+   ALLOCATE(div_const(size_arr))
+
+   !Calculates arsinh part
+   !div_const = arrin/max_c
     
-    !Calculates arsinh part
-    arsinh = F*K*SQRT((arrin/cmax)*(1.0_REAL64 - arrin/cmax))       !jc
-    arsinh = iapp/(a*L*arsinh)                                      !argument of arsinh
-    arsinh = LOG(arsinh + SQRT(arsinh**2.0_REAL64 + 1.0_REAL64))    !arsinh
+   !arsinh = farad*rr_coef*SQRT(div_const - (div_const**2))
+   !arsinh = volt_con_ial/arsinh
+   !arsinh = ASINH(arsinh)
     
-    volt_array = U_arr(arrin/cmax) - (2.0_REAL64*Rg*T/F)*arsinh
+   !volt_array = U_arr(div_const) - (volt_con_rtf*arsinh)
+   
+   !$OMP parallel do default (shared) private(i, arsinh)
+   do i = 1, size_arr
+      volt_array(i) = volt_scalar(arrin(i))
+   end do 
+   
+   
     
-  END FUNCTION volt_array
+ END FUNCTION volt_array
     
 END MODULE pde_solver

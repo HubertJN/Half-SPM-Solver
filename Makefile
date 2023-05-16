@@ -16,6 +16,7 @@ exe=test.out
 
 object=input_output_netcdf.o fd.o pde.o
 
+#set to 1 to run in serial
 num_threads=12
 
 

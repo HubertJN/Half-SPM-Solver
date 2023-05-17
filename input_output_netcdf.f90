@@ -1,5 +1,10 @@
 module input_output_netcdf
-  
+   !> @file input_output_netcdf.f90
+   !! @brief Module file for I/O using NetCDF.
+   !!
+   !! @details This contains the subroutines necessary for 
+   !! reading and writing NetCDF files in the appropriate
+   !! format.
   use netcdf
   use iso_fortran_env
   
@@ -7,7 +12,15 @@ module input_output_netcdf
 
   integer,           parameter :: DP=kind(1.0D0)
   
+  !> @var real64 farad
+  !! farad is the Faraday constant
+  !!
+  !! It has units of C/mol
   real(kind=Real64), parameter :: farad = 96485.3321233100184_DP !C/mol
+  !> @var real64 gas_con
+  !! gas_con is the ideal gas constant
+  !!
+  !! It has units of J/(K.mol)
   real(kind=Real64), parameter :: gas_con = 8.31446261815324_DP !J/(K.mol)
   
   real(kind=Real64)            :: temp, rad, thick, rr_coef, dif_coef, iapp
@@ -20,8 +33,12 @@ module input_output_netcdf
   
 contains
 
-  !>This subroutine takes in an integer error code from NetCDF (ierr), prints out the associated error, and stops the code.
-  !!If there is no error, nothing happens
+  !> @brief Error checking subroutine for NetCDF
+  !!
+  !! @details This subroutine takes in an integer error code from NetCDF (ierr), prints out the associated error, and stops the code.
+  !! If there is no error, subroutine continues
+  !!
+  !! @param[in] ierr      NetCDF error code
   subroutine error_check(ierr)
     implicit none
     
@@ -34,9 +51,24 @@ contains
     
   end subroutine error_check
 
-  !>This subroutine reads (act=r) or writes (act=w) a single integer (sing) or a vector (vect), from/to a variable with name (var_name) or id (var_id_in)...
-  !!...in a NetCDF file with id (file_id)
-  !!Optionally you can save the variable id by inputting a variable to store it (var_id_out)
+  !> @brief I/O subroutine that reads integers from a NetCDF file or writes integers to a NetCDF file
+  !!
+  !! @details This subroutine reads or writes a single integer or a vector of integers,
+  !! from or to a variable with a given name or variable id
+  !! in a NetCDF file with a given NetCDF id.
+  !! 
+  !! What the subroutine does is dictated by the input arguments. One of the arguments sing and vect must be inputed into the subroutine
+  !! as well as one of the arguments var_name and var_id_in.
+  !!
+  !! Optionally you can save the variable id by inputting a variable to store it, var_id_out.
+  !!
+  !! @param[in]     act             subroutine action: 'r' for read and 'w' for write
+  !! @param[in,out] sing            single integer to read/write, optional argument
+  !! @param[in,out] vect            vector of integers to read/write, optional argument
+  !! @param[in]     var_name        name of variable to read from or write to, optional argument
+  !! @param[in]     var_id_in       id of variable to read from or write to, optional argument
+  !! @param[in]     file_id         NetCDF file id
+  !! @param[out]    var_id_out      id of variable to store var_id_in, optional argument
   subroutine assign_int(file_id, act, vect, sing, var_name, var_id_in, var_id_out)
     implicit none
 
@@ -98,9 +130,24 @@ contains
     
   end subroutine assign_int
 
-  !>This subroutine reads (act=r) or writes (act=w) a single real number (sing) or a vector (vect), from/to a variable with name (var_name) or id (var_id_in)...
-  !!...in a NetCDF file with id (file_id)
-  !!Optionally you can save the variable id by inputting a variable to store it (var_id_out)
+  !> @brief I/O subroutine that reads reals from a NetCDF file or writes reals to a NetCDF file
+  !!
+  !! @details This subroutine reads or writes a single real or a vector of reals,
+  !! from or to a variable with a given name or variable id
+  !! in a NetCDF file with a given NetCDF id.
+  !! 
+  !! What the subroutine does is dictated by the input arguments. One of the arguments sing and vect must be inputed into the subroutine
+  !! as well as one of the arguments var_name and var_id_in.
+  !!
+  !! Optionally you can save the variable id by inputting a variable to store it, var_id_out.
+  !!
+  !! @param[in]     act             subroutine action: 'r' for read and 'w' for write
+  !! @param[in,out] sing            single real to read/write, optional argument
+  !! @param[in,out] vect            vector of reals to read/write, optional argument
+  !! @param[in]     var_name        name of variable to read from or write to, optional argument
+  !! @param[in]     var_id_in       id of variable to read from or write to, optional argument
+  !! @param[in]     file_id         NetCDF file id
+  !! @param[out]    var_id_out      id of variable to store var_id_in, optional argument
   subroutine assign_real(file_id, act, vect, sing, var_name, var_id_in, var_id_out)
     implicit none
 
@@ -159,8 +206,19 @@ contains
     end if
   end subroutine assign_real
 
-  !>This subroutine writes the integer 2D array (var), to the variable named (var_name) with variable id (var_id_in), in the netcdf file with id (file_id), at position (it)
-  !!This should be used to write integer arrays (var), to a variable (var_name), with an infinite dimension, (var_len x undefined)
+  !> @brief I/O subroutine that writes integer arrays to a variable with an infinite dimension
+  !!
+  !! @details This subroutine writes a 2D integer array 'var', 
+  !! to the variable named 'var_name' with variable id 'var_id_in' 
+  !! in the NetCDF file with id 'file_id' at position 'it'.
+  !!
+  !! This should be used to write integer arrays 'var', to a variable 'var_name', with an infinite dimension
+  !! 
+  !! @param[in]     var             2D integer array
+  !! @param[in]     var_name        name of variable to write
+  !! @param[in]     var_id_in       id of variable to write
+  !! @param[in]     file_id         id of NetCDF file to write to
+  !! @param[in]     it              position within NetCDF file to write to
   subroutine assign_exp_int(var, file_id, it, var_name, var_id_in)
     implicit none
 
@@ -187,8 +245,19 @@ contains
 
   end subroutine assign_exp_int
 
-  !>This subroutine writes the real 2D array (var), to the variable named (var_name) with variable id (var_id_in), in the netcdf file with id (file_id), at position (it)
-  !!This should be used to write real arrays (var), to a variable (var_name), with an infinite dimension, (var_len x undefined)
+  !> @brief I/O subroutine that writes real arrays to a variable with an infinite dimension
+  !!
+  !! @details This subroutine writes a 2D real array 'var', 
+  !! to the variable named 'var_name' with variable id 'var_id_in' 
+  !! in the NetCDF file with id 'file_id' at position 'it'.
+  !!
+  !! This should be used to write real arrays 'var', to a variable 'var_name', with an infinite dimension
+  !! 
+  !! @param[in]     var             2D real array
+  !! @param[in]     var_name        name of variable to write
+  !! @param[in]     var_id_in       id of variable to write
+  !! @param[in]     file_id         id of NetCDF file to write to
+  !! @param[in]     it              position within NetCDF file to write to
   subroutine assign_exp_real(var, file_id, it, var_name, var_id_in)
     implicit none
 
@@ -215,9 +284,25 @@ contains
 
   end subroutine assign_exp_real
 
-  !>This subroutine creates a variable called (var_name) with length (var_len) and data type (var_typ (f90_int or f90_double)), in a netcdf file with id (file_id)
-  !!You can optionally prescribe units to the variable (units), and if you want to save the variable id you can input a variable to store it (var_id_out)
-  !!If the file is NOT in definition mode, so already exists, you can use (act='add') to add the variable to an existing netcdf file with id (file_id)
+  !> @brief I/O subroutine that creates a named variable with specific length and data type within a NetCDF file
+  !!
+  !! @details This subroutine creates a variable called 'var_name'
+  !! with length 'var_len' and data type 'var_typ' (in this case f90_int or f90_double)
+  !! in a NetCDF file with id 'file_id'
+  !!
+  !! You can optionally prescribe units to the variable'units', 
+  !! and if you want to save the variable id you can input a variable to store it 'var_id_out'
+  !!
+  !! If the file is NOT in definition mode, so already exists,
+  !! you can use (act='add') to add the variable to an existing netcdf file with id 'file_id'
+  !! 
+  !! @param[in]     var_name       name of variable to be created in NetCDF file
+  !! @param[in]     var_len        length of variable to be created in NetCDF file
+  !! @param[in]     var_type       data type of variable to be created, f90_int or f90_double
+  !! @param[in]     file_id        id of NetCDF file where variable is being created
+  !! @param[in]     units          units of variable, optional argument
+  !! @param[out]    var_id_out     variable to store NetCDF variable id, optional argument
+  !! @param[in]     act            set to 'add' to add variable to existing NetCDF file, optional argument
   subroutine create_sing_var(var_name, var_typ, var_len, file_id, units, act, var_id_out)
     implicit none
 
@@ -254,9 +339,25 @@ contains
     
   end subroutine create_sing_var
 
-  !>This subroutine creates an expanding variable called (var_name), with dimension (var_len x undefined), and with data type (var_typ (f90_int or f90_double)), in a netcdf file with id (file_id)
-  !!You can optionally prescribe units to the variable (units) and if you want to save the variable id you can input a variable to store it (var_id_out)
-  !!If the file is NOT in definition mode, so already exists, you can use (act='add') to add the variable to an existing netcdf file with id (file_id)
+  !> @brief I/O subroutine that creates an expanding variable with specific dimensions and data type within a NetCDF file
+  !!
+  !! @details This subroutine creates an expanding variable called 'var_name'
+  !! with dimensions 'var_len x undefined' and data type 'var_typ' (in this case f90_int or f90_double)
+  !! in a NetCDF file with id 'file_id'
+  !!
+  !! You can optionally prescribe units to the variable'units', 
+  !! and if you want to save the variable id you can input a variable to store it 'var_id_out'
+  !!
+  !! If the file is NOT in definition mode, so already exists,
+  !! you can use (act='add') to add the variable to an existing netcdf file with id 'file_id'
+  !! 
+  !! @param[in]     var_name       name of variable to be created in NetCDF file
+  !! @param[in]     var_len        length of variable to be created in NetCDF file
+  !! @param[in]     var_type       data type of variable to be created, f90_int or f90_double
+  !! @param[in]     file_id        id of NetCDF file where variable is being created
+  !! @param[in]     units          units of variable, optional argument
+  !! @param[out]    var_id_out     variable to store NetCDF variable id, optional argument
+  !! @param[in]     act            set to 'add' to add variable to existing NetCDF file, optional argument
   subroutine create_exp_var(var_name, var_typ, var_len, file_id, units, act, var_id_out)
     implicit none
 
@@ -296,9 +397,22 @@ contains
 
   end subroutine create_exp_var
 
-  !>This subroutine writes an integer vector (vect) or single number (sing) to an existing variable named (var_name) in a netcdf file with id (file_id)
-  !!if (act='new'), this assumes the variable doesn't already exist and will create an integer variable called (var_name), with length (var_len) and units (units)...
-  !!... and write the integer variable (vect or sing) to this variable
+  !> @brief I/O subroutine that writes an integer vector or single number to existing variable within a NetCDF file
+  !!
+  !! @details This subroutine writes an integer vector 'vect' 
+  !! or single number 'sing' to an existing variable named 'var_name'
+  !! in a NetCDF file with id 'file_id' if (act='new'), this assumes the variable does not
+  !! already exist and will create an integer variable called 'var_name'
+  !! with length 'var_len' and units 'units'
+  !! and write the integer variable ('vect' or 'sing') to this variable.
+  !! 
+  !! @param[in]        var_name       name of variable to write to in NetCDF file
+  !! @param[in]        file_id        id of NetCDF file where variable is being written
+  !! @param[in,out]    vect           integer vector to be written, optional argument
+  !! @param[in,out]    sing           single integer to be written, optional argument
+  !! @param[in]        units          units of variable, optional argument
+  !! @param[in]        act            set to 'new' to create variable in NetCDF file, optional argument
+  !! @param[in]        var_len        length of variable to be created in NetCDF file
   subroutine save_int(var_name, file_id, vect, sing, units, act, var_len)
     implicit none
 
@@ -322,9 +436,22 @@ contains
     
   end subroutine save_int
 
-  !>This subroutine writes a real vector (vect) or single number (sing) to an existing variable named (var_name) in a netcdf file with id (file_id)
-  !!if (act='new'), this assumes the variable doesn't already exist and will create a real variable called (var_name), with length (var_len) and units (units)...
-  !!... and write the real variable (vect or sing) to this variable
+  !> @brief I/O subroutine that writes a real vector or single number to existing variable within a NetCDF file
+  !!
+  !! @details This subroutine writes a real vector 'vect' 
+  !! or single number 'sing' to an existing variable named 'var_name'
+  !! in a NetCDF file with id 'file_id' if (act='new'), this assumes the variable does not
+  !! already exist and will create an integer variable called 'var_name'
+  !! with length 'var_len' and units 'units'
+  !! and write the real variable ('vect' or 'sing') to this variable.
+  !! 
+  !! @param[in]        var_name       name of variable to write to in NetCDF file
+  !! @param[in]        file_id        id of NetCDF file where variable is being written
+  !! @param[in,out]    vect           integer vector to be written, optional argument
+  !! @param[in,out]    sing           single integer to be written, optional argument
+  !! @param[in]        units          units of variable, optional argument
+  !! @param[in]        act            set to 'new' to create variable in NetCDF file, optional argument
+  !! @param[in]        var_len        length of variable to be created in NetCDF file
   subroutine save_real(var_name, file_id, vect, sing, units, act, var_len)
     implicit none
 
@@ -348,7 +475,7 @@ contains
     
   end subroutine save_real
 
-  !>This subroutine closes NetCDF output and checkpoint files that are open
+  !> @brief Subroutine that closes NetCDF output and checkpoint files that are open
   subroutine fin_in_out()
     implicit none
 
@@ -362,8 +489,11 @@ contains
     
   end subroutine fin_in_out
 
-  !>This subroutine opens the netcdf file with name (file_name), reads the input values, writes them to global variables, and closes the file
-  !!As a test case, if no file_name is given a series of test values are prescribed instead
+  !> @brief I/O subroutine that opens a NetCDF file, reads values, writes them to global variables and closes the file
+  !!
+  !! @details As a test case, if no file_name is given a series of test values are prescribed instead
+  !!
+  !! @param[in]  file_name         name of NetCDF file to open
   subroutine import_input(file_name)
     implicit none
 
@@ -427,7 +557,9 @@ contains
     
   end subroutine import_input
 
-  !>This subroutine creates a netcdf file named (file_name), initiates input variables and saves variables that are available
+  !> @brief I/O subroutine that creates a NetCDF file, initiates input variables and saves variables that are available
+  !!
+  !! @param[in]  file_name         name of NetCDF file to create
   subroutine initiate_file(file_name)
     implicit none
     
@@ -480,7 +612,9 @@ contains
 
   end subroutine initiate_file
   
-  !>This subroutine creates a netcdf file named (file_name), initiates checkpoint specific variables and saves available variables
+  !> @brief I/O subroutine that creates a NetCDF file, initiates checkpoint specific variables and saves available variables
+  !!
+  !! @param[in]  file_name         name of NetCDF file to create
   subroutine initiate_checkp(file_name)
     implicit none
     
@@ -503,10 +637,17 @@ contains
     call assign_int(check_id, 'w', sing=space_steps, var_name='space_steps')
     
   end subroutine initiate_checkp
-
-  !>This subroutine reads from a checkpoint file named (file_name) and saves the concentration vector to (conc)
-  !!It extracts other variables to keep track of the total simulation steps and total simulation time
-  !!It also opens an old netcdf output file and gets variable ids for the variables it will write new data to
+  !> @brief I/O subroutine that reads from a checkpoint file and saves the concentration vector
+  !!
+  !! @details This subroutine reads from a checkpoint file named 'file_name' 
+  !! and saves the concentration vector to 'conc'.
+  !! It extracts other variables to keep track of the total simulation steps and total simulation time.
+  !! It also opens an old netcdf output file and gets variable ids for the variables it will write new data to.
+  !!
+  !! @param[in]        check_file_name      name of NetCDF checkpoint file to read
+  !! @param[in]        out_file_name        name of NetCDF file to write to
+  !! @param[in,out]    conc                 concentration vector
+  !! @param[in]        volt_do              logic value to determine whether to write voltage
   subroutine load_checkp(check_file_name, out_file_name, conc, volt_do)
     implicit none
     
@@ -538,6 +679,10 @@ contains
   end subroutine load_checkp
 
   !>This subroutine overwrites the concentration vector (conc) and number of time steps (step_num) in the checkpoint NetCDF file
+  !> @brief I/O subroutine that overwrites the concentration vector and number of time steps in the checkpoint NetCDF file
+  !!
+  !! @param[in,out]    conc                 concentration vector
+  !! @param[in,out]    step_num             number of time steps
   subroutine update_checkp(conc, step_num)
     implicit none
     

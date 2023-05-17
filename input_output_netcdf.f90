@@ -642,9 +642,9 @@ contains
        thick = 75.6e-6_DP
        rr_coef = 3.42_DP
        dif_coef = 1.48e-15_DP
-       init_c = 51765.0_DP
+       init_c = 47023.326_DP
        max_c = 51765.0_DP
-       dt = 2e-9_DP
+       dt = 2.0_DP
        vol_per = 66.5_DP
        iapp = 48.685491723466406_DP
        volt_do = .True.

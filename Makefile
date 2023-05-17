@@ -27,34 +27,8 @@ object=input_output_netcdf.o fd.o pde.o
 test.out: $(object)
 		$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
 
-ifeq ($(num_threads),1)		
-	@#automatically execute commands
-	./test.out
-	python3 plots.py
-	@#clean output files after visualisation is produced 
-	@#make clean
-	@#echo "num_threads=" $(num_threads)
-	@echo "Serial code running"
-
-else
-	@#automatically execute commands
-	OMP_NUM_THREADS=$(num_threads) ./test.out
-	python3 plots.py
-	@#clean output files after visualisation is produced 
-	@#make clean
-	@echo "Parallelising. Number of threads = " $(num_threads)
-
-endif
-
 
 #Checking if object files created 
-#ifeq ("$(wildcard $(./fd.o))","")
-#	@echo "FD solver ready"
-#else
-#	@echo "FD solver failed"
-#endif	
-
-
 ifeq ("$(wildcard $(./pde.o))","")
 	@echo "Crank-Nicolson solver ready"
 else
@@ -77,25 +51,37 @@ else
 endif
 
 
-#Purge build and output files, give no errors if they did not previously exist 
-clean:
-	rm -f *.o *.mod $(exe)
-	rm -f SP_output.nc
-	rm -f SP_check.chp
-	@echo "Files removed"
-
-
-#Remove the build files but keep the output 
-checkpoint:
-	rm -f *.o *.mod $(exe)
-	@echo "Files removed"
-
-
 #Rules for building object files
 %.o: %.f90
 	$(compiler) $(flags) -c $< $(libraries) -o $@
+		
 
-# Generate Doxygen documentation
+#Serial or parallel run
+ifeq ($(num_threads),1)	
+exe: 		
+		@./test.out
+		@echo "Serial code produced"
+else
+exe:
+		@OMP_NUM_THREADS=$(num_threads) ./test.out 
+		@echo "Parallel code produced. Number of threads = " $(num_threads)
+		
+endif
+	
+#Generate visualisation
+visual: 
+	python3 plots.py	
+
+
+
+#Purge build and output files, give no errors if they did not previously exist 
+clean:
+	rm -f *.o *.mod $(exe)
+	@echo "Files removed"
+
+
+
+#Generate Doxygen documentation
 .PHONY: docs
 docs:
 	doxygen ./doxygen/Doxyfile

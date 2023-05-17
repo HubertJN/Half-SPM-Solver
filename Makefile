@@ -94,3 +94,11 @@ checkpoint:
 #Rules for building object files
 %.o: %.f90
 	$(compiler) $(flags) -c $< $(libraries) -o $@
+
+# Generate Doxygen documentation
+.PHONY: docs
+docs:
+	doxygen ./doxygen/Doxyfile
+	(cd ./doxygen/output/latex && make)
+	cp ./doxygen/output/latex/refman.pdf docs.pdf
+	ln -s ./doxygen/output/html/index.html docs.html

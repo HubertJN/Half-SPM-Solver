@@ -17,48 +17,48 @@ module input_output_netcdf
   !> @var real64 farad
   !! farad is the Faraday constant
   !!
-  !! It has units of $C mol^{-1}$
+  !! It has units of \f$C mol^{-1}\f$
   real(kind=Real64), parameter :: farad = 96485.3321233100184_DP !C/mol
   !> @var real64 gas_con
   !! gas_con is the ideal gas constant
   !!
-  !! It has units of $J K^{-1} mol^{-1}$
+  !! It has units of \f$J K^{-1} mol^{-1}\f$
   real(kind=Real64), parameter :: gas_con = 8.31446261815324_DP !J/(K.mol)
   !> @var real64 temp
   !!
   !! temp is the temperature of the simulation
   !!
-  !! It has units of K
+  !! It has units of \f$K\f$
   
   !> @var real64 rad
   !!
   !! rad is the radius of the particle
   !!
-  !! It has units of m
+  !! It has units of \f$m\f$
   
   !> @var real64 thick
   !!
   !! thick is the thickness of the electrode
   !!
-  !! It has units of m
+  !! It has units of \f$m\f$
   
   !> @var real64 rr_coef
   !!
   !! rr_coef is the reaction rate coefficient
   !!
-  !! It has units of $A m^2 \left(m^3 mol^{-1} \right)^{1.5}$
+  !! It has units of \f$A m^2 \left(m^3 mol^{-1} \right)^{1.5}\f$
   
   !> @var real64 dif_coef
   !!
   !! dif_coef is the diffusion coefficient
   !!
-  !! It has units of $m^2 s^{-1}$
+  !! It has units of \f$m^2 s^{-1}\f$
   
   !> @var real64 iapp
   !!
   !! iapp is the applied current density as a function of time
   !!
-  !! It has units of $A m^{-2}$
+  !! It has units of \f$A m^{-2}\f$
   
   real(kind=Real64)            :: temp, rad, thick, rr_coef, dif_coef, iapp
   
@@ -66,19 +66,19 @@ module input_output_netcdf
   !!
   !! init_c is the initial concentration
   !!
-  !! It has units of $mol m^{-3}$
+  !! It has units of \f$mol m^{-3}\f$
   
   !> @var real64 max_c
   !!
   !! max_c is the maximum concentration of the simulation
   !!
-  !! It has units of $mol m^{-3}$
+  !! It has units of \f$mol m^{-3}\f$
   
   !> @var real64 dt
   !!
   !! dt is the time step
   !!
-  !! It has units of $s$
+  !! It has units of \f$s\f$
   
   !> @var real64 vol_per
   !!
@@ -88,7 +88,7 @@ module input_output_netcdf
   !!
   !! final_time is the time of the final time step
   !!
-  !! It has units of $s$
+  !! It has units of \f$s\f$
   
   real(kind=Real64)            :: init_c, max_c, dt, vol_per, final_time
   

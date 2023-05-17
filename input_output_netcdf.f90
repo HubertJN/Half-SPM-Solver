@@ -13,51 +13,51 @@ module input_output_netcdf
   !!
   !! DP is used to define a number as double precision
   !> @var real64 farad
-  !! farad is the Faraday constant
+  !! farad is the Faraday constant, \f$ F \f$
   !!
   !! It has units of \f$C mol^{-1}\f$
   !> @var real64 gas_con
-  !! gas_con is the ideal gas constant
+  !! gas_con is the ideal gas constant, \f$ R_g \f$
   !!
   !! It has units of \f$J K^{-1} mol^{-1}\f$
   !> @var real64 temp
   !!
-  !! temp is the temperature of the simulation
+  !! temp is the temperature of the simulation, \f$ T \f$
   !!
   !! It has units of \f$K\f$
   !> @var real64 rad
   !!
-  !! rad is the radius of the particle
+  !! rad is the radius of the particle, \f$ R \f$
   !!
   !! It has units of \f$m\f$
-  !> @var real64 thick
+  !> @var real64 thick, \f$ L \f$
   !!
   !! thick is the thickness of the electrode
   !!
   !! It has units of \f$m\f$
   !> @var real64 rr_coef
   !!
-  !! rr_coef is the reaction rate coefficient
+  !! rr_coef is the reaction rate coefficient, \f$ K \f$
   !!
   !! It has units of \f$A m^2 \left(m^3 mol^{-1} \right)^{1.5}\f$
   !> @var real64 dif_coef
   !!
-  !! dif_coef is the diffusion coefficient
+  !! dif_coef is the diffusion coefficient, \f$ D \f$
   !!
   !! It has units of \f$m^2 s^{-1}\f$
   !> @var real64 iapp
   !!
-  !! iapp is the applied current density as a function of time
+  !! iapp is the applied current density as a function of time, \f$ i_{app} \f$
   !!
   !! It has units of \f$A m^{-2}\f$
   !> @var real64 init_c
   !!
-  !! init_c is the initial concentration
+  !! init_c is the initial concentration, \f$ c_0 \f$
   !!
   !! It has units of \f$mol m^{-3}\f$
   !> @var real64 max_c
   !!
-  !! max_c is the maximum concentration of the simulation
+  !! max_c is the maximum concentration of the simulation, \f$ c_{max} \f$
   !!
   !! It has units of \f$mol m^{-3}\f$
   !> @var real64 dt
@@ -67,7 +67,7 @@ module input_output_netcdf
   !! It has units of \f$s\f$
   !> @var real64 vol_per
   !!
-  !! vol_per is the active material volume fraction
+  !! vol_per is the active material volume fraction, \f$ \epsilon_{actk} \f$
   !> @var real64 final_time
   !!
   !! final_time is the time of the final time step

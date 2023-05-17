@@ -7,7 +7,6 @@ PROGRAM main
   !! lost in the event of an unforeseen error. 
   USE ISO_FORTRAN_ENV
   USE pde_solver
-  use fd_solver
   USE input_output_netcdf
   
   IMPLICIT NONE
@@ -22,8 +21,63 @@ PROGRAM main
   !test functions
   !mesh
   
+  !> @var character loadname 
+  !!
+  !! Name of the input file.
+  !> @var character outname
+  !!
+  !! Name of the output file.
+  !> @var character checkname
+  !!
+  !! Name of the checkpoint file.
+  !> @var real64 A(:,:)
+  !!
+  !! Left hand side coefficient matrix of the system of equations, please refer to formulation section.
+  !> @var real64 B(:,:)
+  !!
+  !! Right hand side coefficient matrix of the system of equations, please refer to formulation section.
+  !> @var real64 c_tmp(:)
+  !!
+  !! Temporary array of concentration that is loaded in from a checkpoint file.
+  !> @var real64 volt(:,:)
+  !!
+  !! Voltage matrix, saving voltage arrays for each timestep intended to be 1D, but kept as 2D for writing
+  !! to a netcdf file.
+  !> @var real64 conc(:,:)
+  !!
+  !! Concentration matrix, saving concentration vectors for each timestep intended to be 2D.
+  !> @var int32 quo
+  !!
+  !! Ratio of number of timesteps to number of outsteps (number of steps until writing to an output file).
+  !> @var int32 step_prog
+  !!
+  !! Counter for the total number of steps.
+  !> @var logical print_timing
+  !!
+  !! Logical toggle to output the timings of the simulation.
+  !> @var int32 rate 
+  !!
+  !! Variable to store the CPU clock rate.
+  !> @var int32 ts
+  !!
+  !! Variable to store the initial number of cpu clocks in a timing.
+  !> @var int32 tc
+  !!
+  !! Variable to store final number of cpu clocks in a timing.
+  !> @var int32 conc_time
+  !!
+  !! The number of CPU cycles taken to do the concentration calculation.
+  !> @var int32 volt_time
+  !!
+  !! The number of CPU cycles taken to do the voltage calculation.
+  !> @var int32 write_time
+  !!
+  !! The number of CPU cycles taken to write to an output file.
+  !> @var int32 total_time
+  !!
+  !! The total number of CPU cycles for the entire simulation (including input and output).
+
   CHARACTER(LEN=12)               :: loadname = "SPM_input.nc", outname = "SP_output.nc", checkname='SP_check.chp'
-  REAL(REAL64)                    :: con, flux_param
   REAL(REAL64),       ALLOCATABLE :: A(:,:), B(:,:)
   REAL(REAL64),       ALLOCATABLE :: c_tmp(:), volt(:,:), conc(:,:)
   INTEGER(kind=int32)             :: i, j, quo, step_prog
@@ -102,8 +156,6 @@ PROGRAM main
   ts = tc
   
   !>Calculate parameters to be used later
-  con = 3.0_REAL64*vol_per/(100.0_REAL64*rad)
-  flux_param = iapp/(con*farad*thick)
 
   !>If doing a voltage calculation you need to create a voltage variable in the output file, calculate it, and write it the output file
   !!These additional steps are added in if voltage_do=.true.
@@ -118,7 +170,6 @@ PROGRAM main
     DO i = 1, (quo-1)
       DO j = 1, (out_steps-1)
          conc(:,(j+1)) = crank_nicholson(A, B, conc(:,j))
-         !conc(:,(j+1)) = fd(rad,dif_coef,flux_param,dt,conc(:,j))
       END DO
       
       !!Now we save the block to the output file keeping track of the number of steps performed including if we start from a checkpoint
@@ -134,7 +185,6 @@ PROGRAM main
    !!Once the above is completed for quo-1 blocks, for the final block we dont have to perform the additional time evolution at the end, so this is removed
    DO j = 1, (out_steps-1)
       conc(:,(j+1)) = crank_nicholson(A, B, conc(:,j))
-      !conc(:,(j+1)) = fd(rad,dif_coef,flux_param,dt,conc(:,j))
    END DO
       
    !!Now we save the block to the output file keeping track of the number of steps performed including if we start from a checkpoint
@@ -172,7 +222,6 @@ PROGRAM main
         DO j = 1, (out_steps-1)
            call system_clock(ts,rate)
            conc(:,(j+1)) = crank_nicholson(A, B, conc(:,j))
-           !conc(:,(j+1)) = fd(rad,dif_coef,flux_param,dt,conc(:,j))
            call system_clock(tc,rate)
            conc_time = conc_time + (tc-ts)
         END DO
@@ -192,14 +241,12 @@ PROGRAM main
         call system_clock(tc,rate)
         write_time = write_time + (tc-ts)
         conc(:,1) = crank_nicholson(A, B, conc(:,out_steps))
-        !conc(:,(j+1)) = fd(rad,dif_coef,flux_param,dt,conc(:,j))
      END DO
 
      call system_clock(ts,rate)
      !!Once the above is completed for quo-1 blocks, for the final block we dont have to perform the additional time evolution at the end, so this is removed
      DO j = 1, (out_steps-1)
         conc(:,(j+1)) = crank_nicholson(A, B, conc(:,j))
-        !conc(:,(j+1)) = fd(rad,dif_coef,flux_param,dt,conc(:,j))
      END DO
 
      !!Calculate the voltage vector for the final conc block
@@ -215,7 +262,7 @@ PROGRAM main
 
      if (print_timing .eqv. .True.) then
         write(0,'("One Cycle",20x,": ",F15.6," seconds")')real(tc-ts,kind=dp)/real(rate,kind=dp)
-        write(0,'("Conc time",20x,": ",F15.6," seconds")')real(conc_time,kind=dp)/real(rate,kind=dp)
+        write(0,'("conc time",20x,": ",F15.6," seconds")')real(conc_time,kind=dp)/real(rate,kind=dp)
         write(0,'("volt time",20x,": ",F15.6," seconds")')real(volt_time,kind=dp)/real(rate,kind=dp)
         write(0,'("Write time",19x,": ",F15.6," seconds")')real(write_time,kind=dp)/real(rate,kind=dp)
      end if

@@ -10,6 +10,18 @@ MODULE pde_solver
   !$  use omp_lib
   
   IMPLICIT NONE
+  !> @var real64 rhs_const
+  !!
+  !! Rescaled source at the flux boundary given by: \f$ \(dt + \frac{dt}{dr} \) \frac{200 R i_{app}}{3 \epsilon_{actk} F L} \f$
+  !> @var real64 volt_con_ial
+  !!
+  !! This is a combination of parameters given by: \f$ \frac{100 i_{app} R}{3 \epsilon_{actk} L} \f$
+  !> @var real64 volt_con_rtf
+  !!
+  !! This is a combination of parameters given by: \f$ \frac{2 R_g T}{F} \f$
+  !> @var real64 mod_dif
+  !!
+  !! The rescaled diffusion coefficient given by: \f$ \frac{D}{R^2} \f$  
   real(kind=real64) :: rhs_const, volt_con_ial, volt_con_rtf, mod_dif
   
 CONTAINS
@@ -19,8 +31,12 @@ CONTAINS
   !! @details This subroutine takes in the corresponding matrices and assigns their elements as the appropriate coefficients in the 
   !! discretised diffusion equation using the Crank-Nicholson scheme.
   !!
-  !! @param[]
-  !! 
+  !! @param[in] A             The left hand side coefficient matrix of the system 
+  !! of equations (please refer to formulation section
+  !! for specific details on the matrix elements
+  !! @param[in] B             The right hand side coefficient matrix of the system
+  !! of equations (please refer to formulation section
+  !! for specific details on the matrix elements.
   subroutine setup_crank_nicholson(A, B)
 
     REAL(REAL64), DIMENSION(space_steps,space_steps), intent(inout) :: A, B
@@ -80,19 +96,24 @@ CONTAINS
     
   end subroutine setup_crank_nicholson
     
+  !> @brief Crank-Nicholson function.
+  !!
+  !! @details Solves the diffusion equation with a constant diffusion coefficient
+  !! and a constant \f$ i_{app} \f$
+  !! using the Crank-Nicholson algorithm.
+  !! The function uses the LAPACK library, calling the dgesv function for solving systems
+  !! of linear equations to evolve the given state by one timestep.
+  !!
+  !! @param[in] A             The left hand side coefficient matrix of the system 
+  !! of equations (please refer to formulation section
+  !! for specific details on the matrix elements
+  !! @param[in] B             The right hand side coefficient matrix of the system
+  !! of equations (please refer to formulation section
+  !! for specific details on the matrix elements.
+  !! @param[in] c_cur         The current time concentration array inputed into the
+  !! Crank-Nicholson solver. 
   FUNCTION crank_nicholson(A, B, c_cur)
   
-    !>solves the diffusion equation with constant diffusion coefficient
-    !!using the Crank-Nicholson algorithm
-    !!via the LAPACK library dgtsv function for tridiagonal matrices
-    !!evolves the given state by one timestep
-    
-    !> @brief Crank-Nicolson parameters
-    !!
-    !! @param[in] rad - max radius of the geometry
-    !! @param[in] dif_coef - the diffusion coefficient
-    !! @param[in] dt - the timestep
-    !! @param[in] c_cur - the current concentration vector in in out
     
     REAL(REAL64),   DIMENSION(:),                INTENT(IN) :: c_cur
     REAL(REAL64),   DIMENSION(:,:), ALLOCATABLE, intent(in) :: A, B
@@ -158,6 +179,14 @@ CONTAINS
   END FUNCTION crank_nicholson
   
   
+   
+  !> @brief Function to calculate the positive electrode OCV curve, \f$ U(c) \f$.
+  !!
+  !! @details OCV stands for Open Circuit Voltage. Please refer to the paper, 
+  !! Chang-Hui Chen et. al. 2020 J. Electrochem Soc. 167 080534
+  !!
+  !! @param[in] x                The stoichiometry.
+
   FUNCTION U_scalar(x)
   
     !Accepts SCALAR x - stoichiometry
@@ -170,10 +199,15 @@ CONTAINS
     U_scalar = -0.8090_REAL64*x + 4.4875_REAL64 - 0.0428_REAL64*TANH(18.5138_REAL64*(x-0.5542_REAL64)) &
                -17.7326_REAL64*TANH(15.7890_REAL64*(x-0.3117_REAL64)) & 
                +17.5842_REAL64*TANH(15.9308_REAL64*(x-0.3120_REAL64))
+    !!and ESSENTIAL PARAMETERS
                  
   END FUNCTION U_scalar
   
   
+  !> @brief Array version fo the U_scalar function.
+  !!
+  !! @param x       Array version of the stoichiometry.
+
   FUNCTION U_arr(x)
     
     !Accepts 1D ARRAY x - stoichiometry
@@ -198,23 +232,15 @@ CONTAINS
     
   END FUNCTION U_arr
   
+  !> @brief Scalar voltage calculator
+  !!
+  !! @details Calculates scalar voltage when given 
+  !! a SCALAR INPUT of concentration, which is cin.
+  !! 
+  !! @param[in] cin           input concentration
   
-  FUNCTION volt_scalar(cin)!, Rg, T, F, iapp, a, L, K, cmax)
-  
-    !>Calculates scalar voltage when given 
-    !!a SCALAR INPUT of concentration
-    !!and ESSENTIAL PARAMETERS
+  FUNCTION volt_scalar(cin)
     
-    !> @brief Scalar voltage calculator
-    !!
-    !! @param[in] Rg - ideal gas coefficient
-    !! @param[in] T - temperature
-    !! @param[in] F  - faraday constant
-    !! @param[in] L - electrode thickness
-    !! @param[in] K - reaction rate coefficient
-    !! @param[in] cmax - maximum concentration
-    
-    !TODO: Neaten up (prevent writing so many params, maybe incorporate into module itself?)
     REAL(REAL64), INTENT(IN) :: cin
     REAL(REAL64) :: arsinh, div_const
     REAL(REAL64) :: volt_scalar
@@ -231,13 +257,15 @@ CONTAINS
     volt_scalar = U_scalar(div_const) - (volt_con_rtf*arsinh)
     
   END FUNCTION volt_scalar
-  
-  
+ 
+  !> @brief Array version of the function volt_scalar
+  !!
+  !! @param  arrin            array input of concentrations.
+
   FUNCTION volt_array(arrin)
     
     !>Calculates an array of voltages when given 
     !!an ARRAY INPUT of concentrations
-    !!and ESSENTIAL PARAMETERS
     
    
     REAL(REAL64), DIMENSION(:), INTENT(IN) :: arrin

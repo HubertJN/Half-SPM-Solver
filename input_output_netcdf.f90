@@ -9,26 +9,153 @@ module input_output_netcdf
   use iso_fortran_env
   
   implicit none
-
+  !> @var kind DP
+  !!
+  !! DP is used to define a number as double precision
   integer,           parameter :: DP=kind(1.0D0)
   
   !> @var real64 farad
   !! farad is the Faraday constant
   !!
-  !! It has units of C/mol
+  !! It has units of $C mol^{-1}$
   real(kind=Real64), parameter :: farad = 96485.3321233100184_DP !C/mol
   !> @var real64 gas_con
   !! gas_con is the ideal gas constant
   !!
-  !! It has units of J/(K.mol)
+  !! It has units of $J K^{-1} mol^{-1}$
   real(kind=Real64), parameter :: gas_con = 8.31446261815324_DP !J/(K.mol)
+  !> @var real64 temp
+  !!
+  !! temp is the temperature of the simulation
+  !!
+  !! It has units of K
+  
+  !> @var real64 rad
+  !!
+  !! rad is the radius of the particle
+  !!
+  !! It has units of m
+  
+  !> @var real64 thick
+  !!
+  !! thick is the thickness of the electrode
+  !!
+  !! It has units of m
+  
+  !> @var real64 rr_coef
+  !!
+  !! rr_coef is the reaction rate coefficient
+  !!
+  !! It has units of $A m^2 \left(m^3 mol^{-1} \right)^{1.5}$
+  
+  !> @var real64 dif_coef
+  !!
+  !! dif_coef is the diffusion coefficient
+  !!
+  !! It has units of $m^2 s^{-1}$
+  
+  !> @var real64 iapp
+  !!
+  !! iapp is the applied current density as a function of time
+  !!
+  !! It has units of $A m^{-2}$
   
   real(kind=Real64)            :: temp, rad, thick, rr_coef, dif_coef, iapp
+  
+  !> @var real64 init_c
+  !!
+  !! init_c is the initial concentration
+  !!
+  !! It has units of $mol m^{-3}$
+  
+  !> @var real64 max_c
+  !!
+  !! max_c is the maximum concentration of the simulation
+  !!
+  !! It has units of $mol m^{-3}$
+  
+  !> @var real64 dt
+  !!
+  !! dt is the time step
+  !!
+  !! It has units of $s$
+  
+  !> @var real64 vol_per
+  !!
+  !! vol_per is the active material volume fraction
+
+  !> @var real64 final_time
+  !!
+  !! final_time is the time of the final time step
+  !!
+  !! It has units of $s$
+  
   real(kind=Real64)            :: init_c, max_c, dt, vol_per, final_time
+  
+  !> @var int32 sim_steps
+  !!
+  !! sim_steps is the number of simulation steps
+  
+  !> @var int32 out_steps
+  !!
+  !! out_steps is the number of steps before writing to output file
+  
+  !> @var int32 space_steps
+  !!
+  !! space_steps is the resolution of the radius
+  
+  !> @var int32 tot_steps
+  !!
+  !! tot_steps is the total number of simulation steps
+  
   integer(kind=int32)          :: sim_steps, out_steps, space_steps, tot_steps
+  
+  !> @var int32 output_id
+  !!
+  !! output_id is the id of the output file
+  
+  !> @var int32 check_id
+  !!
+  !! check_id is the id of the checkpoint file
+  
   integer(kind=int32)          :: output_id, check_id
+  
+  !> @var int32 volt_out_id
+  !!
+  !! volt_out_id is the variable id of the voltage in the output file
+  
+  !> @var int32 conc_out_id
+  !!
+  !! conc_out_id is the varialbe id of the concentration in the output ilfe
+  
+  !> @var int32 time_check_id
+  !!
+  !! time_check_id is the id of the final time of the simulation in the checkpoint file
+  
+  !> @var int32 ts_check_id
+  !!
+  !! ts_check_id is the id of the final time step of the simulation in the checkpoint file
+  
   integer(kind=int32)          :: volt_out_id, conc_out_id, conc_check_id, time_check_id, ts_check_id
+  
+  !> @var logical volt_do
+  !!
+  !! volt_do is the logical value which determines whether to calculate voltage to the outputfile
+  
+  !> @var logical checkpoint
+  !!
+  !! checkpoint is the logical value which determines whether to restart simulation from the checkpoint
+  
   logical                      :: volt_do, checkpoint
+  
+  !> @var int32 volt_do_int
+  !!
+  !! volt_do_int is the binary representation of the volt_do variable
+  
+  !> @var int32 checkpoint_int
+  !!
+  !! checkpoint_int is the binary representation of the checkpoint_int
+  
   integer(kind=int32)          :: volt_do_int, checkpoint_int
   
 contains

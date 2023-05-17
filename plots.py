@@ -177,3 +177,5 @@ if do_volt == 1:
 plt.draw()
 plt.tight_layout()
 plt.show()
+
+dat.close()

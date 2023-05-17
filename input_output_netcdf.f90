@@ -12,7 +12,6 @@ module input_output_netcdf
   !> @var kind DP
   !!
   !! DP is used to define a number as double precision
-  
   !> @var real64 farad
   !! farad is the Faraday constant
   !!
@@ -116,7 +115,7 @@ module input_output_netcdf
   !> @var int32 checkpoint_int
   !!
   !! checkpoint_int is the binary representation of the checkpoint_int
-  
+
   integer,           parameter :: DP=kind(1.0D0)
   real(kind=Real64), parameter :: farad = 96485.3321233100184_DP !C/mol
   real(kind=Real64), parameter :: gas_con = 8.31446261815324_DP !J/(K.mol)

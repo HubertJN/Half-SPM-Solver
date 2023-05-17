@@ -9,13 +9,12 @@ MODULE pde_solver
   
 CONTAINS
 
-  subroutine setup_crank_nicholson(AL, A, AU, B)
+  subroutine setup_crank_nicholson(A, B)
 
-    REAL(REAL64), DIMENSION(:),   intent(inout) :: AL, A, AU
-    REAL(REAL64), DIMENSION(:,:), intent(inout) :: B
+    REAL(REAL64), DIMENSION(space_steps,space_steps), intent(inout) :: A, B
 
-    REAL(REAL64)                                :: ai, ri, num, iapp, flux_param, div_const, dr
-    integer(int32)                              :: n, i
+    REAL(REAL64)                                                    :: ai, ri, num, flux_param, dr
+    integer(int32)                                                  :: n, i
 
     n = space_steps
     IF (n < 2) THEN
@@ -27,55 +26,49 @@ CONTAINS
 
     num = 3.0_REAL64*vol_per/(100.0_REAL64*rad)
     mod_dif = dif_coef/(rad**2)
-    !iapp = c_rate*dt/area
     
     flux_param = iapp/(num*farad*thick)
     volt_con_ial = iapp/(num*thick)
     volt_con_rtf = (2.0_REAL64*gas_con*temp)/farad
 
-    AL = 0.0_REAL64
     A = 0.0_REAL64
-    AU = 0.0_REAL64
     B = 0.0_REAL64
+
+    ai = dt*mod_dif/(2.0_REAL64*dr*dr)
 
     DO i=2,n-1
       !>current radius and dimensionless parameter ai
       ri = REAL((i-1),KIND=REAL64)*dr
-      ai = dt*mod_dif/(2.0_REAL64*dr*ri)
-
-      div_const = ai*(ri/dr)
       
       !>LHS
-      AL(i-1) = ai - div_const
-      A(i) = 1.0_REAL64 + 2.0_REAL64*div_const
-      AU(i) = -ai - div_const
+      A(i,i-1) = ai*(-1.0_REAL64 + dr/ri)
+      A(i,i) = 1.0_REAL64 + 2.0_REAL64*ai
+      A(i,i+1) = ai*(-1.0_REAL64 - dr/ri)
       
       !>RHS
-      B(i,i-1) = div_const - ai
-      B(i,i) = 1.0_REAL64 - 2.0_REAL64*div_const
-      B(i,i+1) = ai + div_const
-      
+      B(i,i-1) = ai*(1.0_REAL64 - dr/ri)
+      B(i,i) = 1.0_REAL64 - 2.0_REAL64*ai
+      B(i,i+1) = ai*(1.0_REAL64 + dr/ri)      
    END DO
 
    !>smooth boundary conditions at r=0
-    ai = dt*mod_dif/(dr*dr)
     
-    A(1) = 1.0_REAL64 + ai
-    AU(1) = -ai
-    B(1,1) = 1.0_REAL64 - ai
-    B(1,2) = ai
+    A(1,1) = 1.0_REAL64 + 2.0_REAL64*ai
+    A(1,2) = -2.0_REAL64*ai
+    B(1,1) = 1.0_REAL64 - 2.0_REAL64*ai
+    B(1,2) = 2.0_REAL64*ai
     
     !>flux boundary conditions
-    AL(n-1) = -ai
-    A(n) = 1.0_REAL64 + ai
-    B(n,n-1) = ai
-    B(n,n) = 1.0_REAL64 - ai
+    A(n,n-1) = -2.0_REAL64*ai
+    A(n,n) = 1.0_REAL64 + 2.0_REAL64*ai
+    B(n,n-1) = 2.0_REAL64*ai
+    B(n,n) = 1.0_REAL64 - 2.0_REAL64*ai
 
     rhs_const = 2.0_REAL64*flux_param*(dt + dt/dr)
     
   end subroutine setup_crank_nicholson
     
-  FUNCTION crank_nicholson(AL, A, AU, B, c_cur)
+  FUNCTION crank_nicholson(A, B, c_cur)
   
     !>solves the diffusion equation with constant diffusion coefficient
     !!using the Crank-Nicholson algorithm
@@ -89,12 +82,13 @@ CONTAINS
     !! @param[in] dt - the timestep
     !! @param[in] c_cur - the current concentration vector in in out
     
-    REAL(REAL64),   DIMENSION(:),                INTENT(IN) :: c_cur, AL, A, AU
-    REAL(REAL64),   DIMENSION(:,:), ALLOCATABLE, intent(in) :: B
+    REAL(REAL64),   DIMENSION(:),                INTENT(IN) :: c_cur
+    REAL(REAL64),   DIMENSION(:,:), ALLOCATABLE, intent(in) :: A, B
      
     REAL(REAL64),   DIMENSION(:),   ALLOCATABLE             :: crank_nicholson
-    REAL(REAL64),   DIMENSION(:,:), ALLOCATABLE             :: B_mod
-    REAL(REAL64),   DIMENSION(:),   ALLOCATABLE             :: AL_mod, A_mod, AU_mod, rhs
+    REAL(REAL64),   DIMENSION(:,:), ALLOCATABLE             :: A_mod, B_mod
+    REAL(REAL64),   DIMENSION(:),   ALLOCATABLE             :: rhs
+    INTEGER, DIMENSION(space_steps)                         :: ipiv
     INTEGER(INT32)                                          :: n, info, i, j
     
     !Get size of input array
@@ -107,17 +101,20 @@ CONTAINS
     IF (ALLOCATED(crank_nicholson)) THEN
       DEALLOCATE(crank_nicholson)
     END IF
+
+    IF (ALLOCATED(A_mod)) THEN
+      DEALLOCATE(A_mod)
+    END IF
     
     ALLOCATE(rhs(n))
     ALLOCATE(crank_nicholson(n))
+    ALLOCATE(A_mod(n,n))
     
     rhs = 0.0_REAL64
     crank_nicholson = 0.0_REAL64
     
     !B_mod = B
-    AL_mod = AL
     A_mod = A
-    AU_mod = AU
     
     !generate RHS
     !!$OMP parallel do default (shared) private(i,j)
@@ -131,8 +128,8 @@ CONTAINS
    
     rhs(n) = rhs(n) - rhs_const
     
-    !dgtsv solver
-    CALL dgtsv(n,1,AL_mod,A_mod,AU_mod,rhs,n,info)
+    !dgesv solver
+    CALL dgesv(n,1,A_mod,n,ipiv,rhs,n,info)
     
     !Error handling - crude at this stage
     IF (info < 0) THEN

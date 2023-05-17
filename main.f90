@@ -19,7 +19,7 @@ PROGRAM main
   
   CHARACTER(LEN=12)               :: loadname = "SPM_input.nc", outname = "SP_output.nc", checkname='SP_check.chp'
   REAL(REAL64)                    :: con, flux_param
-  REAL(REAL64),       ALLOCATABLE :: AL(:), A(:), AU(:), B(:,:)
+  REAL(REAL64),       ALLOCATABLE :: A(:,:), B(:,:)
   REAL(REAL64),       ALLOCATABLE :: c_tmp(:), volt(:,:), conc(:,:)
   INTEGER(kind=int32)             :: i, j, quo, step_prog
 
@@ -45,17 +45,9 @@ PROGRAM main
   IF (ALLOCATED(volt)) THEN
     DEALLOCATE(volt)
   END IF
- 
-  IF (ALLOCATED(AL)) THEN
-    DEALLOCATE(AL)
-  END IF
     
   IF (ALLOCATED(A)) THEN
     DEALLOCATE(A)
-  END IF
-    
-  IF (ALLOCATED(AU)) THEN
-    DEALLOCATE(AU)
   END IF
     
   IF(ALLOCATED(B)) THEN
@@ -63,12 +55,10 @@ PROGRAM main
   END IF
   
   ALLOCATE(conc(space_steps,out_steps))
-  ALLOCATE(AL(space_steps-1))
-  ALLOCATE(A(space_steps))
-  ALLOCATE(AU(space_steps-1))
+  ALLOCATE(A(space_steps,space_steps))
   ALLOCATE(B(space_steps,space_steps))
 
-  call setup_crank_nicholson(AL, A, AU, B)
+  call setup_crank_nicholson(A, B)
 
   !Assign concentration to an impossible number to check for errors
   conc = -1.0_REAL64
@@ -116,13 +106,13 @@ PROGRAM main
 
      !!If we are starting from a checkpoint, we need the first row of conc to be the next evolution in the output file, so we perform one time step to get this
      if (checkpoint .eqv. .True.) then
-        conc(:,1) = crank_nicholson(AL, A, AU, B, c_tmp)
+        conc(:,1) = crank_nicholson(A, B, c_tmp)
      end if
     
     !!Then we loop over all sim_steps in chunks of out_steps to save the total concentration matrix in blocks
     DO i = 1, (quo-1)
       DO j = 1, (out_steps-1)
-         conc(:,(j+1)) = crank_nicholson(AL, A, AU, B, conc(:,j))
+         conc(:,(j+1)) = crank_nicholson(A, B, conc(:,j))
          !conc(:,(j+1)) = fd(rad,dif_coef,flux_param,dt,conc(:,j))
       END DO
       
@@ -133,12 +123,12 @@ PROGRAM main
       call update_checkp(conc(:,out_steps), step_prog)
 
       !!We then perform one more step to get the first row of the matrix for the next block of steps
-      conc(:,1) = crank_nicholson(AL, A, AU, B, conc(:,out_steps))
+      conc(:,1) = crank_nicholson(A, B, conc(:,out_steps))
    END DO
 
    !!Once the above is completed for quo-1 blocks, for the final block we dont have to perform the additional time evolution at the end, so this is removed
    DO j = 1, (out_steps-1)
-      conc(:,(j+1)) = crank_nicholson(AL, A, AU, B, conc(:,j))
+      conc(:,(j+1)) = crank_nicholson(A, B, conc(:,j))
       !conc(:,(j+1)) = fd(rad,dif_coef,flux_param,dt,conc(:,j))
    END DO
       
@@ -159,7 +149,7 @@ PROGRAM main
      !!If we are starting from a checkpoint we assume the voltage variable exists
      !!If we are starting from a checkpoint, we need the first row of conc to be the next evolution in the output file, so we perform one time step to get this
      else
-        conc(:,1) = crank_nicholson(AL, A, AU, B, c_tmp)
+        conc(:,1) = crank_nicholson(A, B, c_tmp)
         
      end if
 
@@ -176,7 +166,7 @@ PROGRAM main
      DO i = 1, (quo-1)
         DO j = 1, (out_steps-1)
            call system_clock(ts,rate)
-           conc(:,(j+1)) = crank_nicholson(AL, A, AU, B, conc(:,j))
+           conc(:,(j+1)) = crank_nicholson(A, B, conc(:,j))
            !conc(:,(j+1)) = fd(rad,dif_coef,flux_param,dt,conc(:,j))
            call system_clock(tc,rate)
            conc_time = conc_time + (tc-ts)
@@ -196,14 +186,14 @@ PROGRAM main
         call update_checkp(conc(:,out_steps), step_prog)
         call system_clock(tc,rate)
         write_time = write_time + (tc-ts)
-        conc(:,1) = crank_nicholson(AL, A, AU, B, conc(:,out_steps))
+        conc(:,1) = crank_nicholson(A, B, conc(:,out_steps))
         !conc(:,(j+1)) = fd(rad,dif_coef,flux_param,dt,conc(:,j))
      END DO
 
      call system_clock(ts,rate)
      !!Once the above is completed for quo-1 blocks, for the final block we dont have to perform the additional time evolution at the end, so this is removed
      DO j = 1, (out_steps-1)
-        conc(:,(j+1)) = crank_nicholson(AL, A, AU, B, conc(:,j))
+        conc(:,(j+1)) = crank_nicholson(A, B, conc(:,j))
         !conc(:,(j+1)) = fd(rad,dif_coef,flux_param,dt,conc(:,j))
      END DO
 

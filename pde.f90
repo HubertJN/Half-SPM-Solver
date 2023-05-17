@@ -1,4 +1,9 @@
 MODULE pde_solver
+  !> @file pde.f90
+  !! @brief Module file for solving the diffusion equation and voltage calculation. 
+  !!
+  !! @details This contains the subroutines necessary for evolving the state of the system under diffusion and 
+  !! calculating the voltage for each simulation timestep. 
 
   USE ISO_FORTRAN_ENV
   use input_output_netcdf
@@ -9,6 +14,13 @@ MODULE pde_solver
   
 CONTAINS
 
+  !> @brief Subroutine to setup the matrices of the system of equations. 
+  !!
+  !! @details This subroutine takes in the corresponding matrices and assigns their elements as the appropriate coefficients in the 
+  !! discretised diffusion equation using the Crank-Nicholson scheme.
+  !!
+  !! @param[]
+  !! 
   subroutine setup_crank_nicholson(A, B)
 
     REAL(REAL64), DIMENSION(space_steps,space_steps), intent(inout) :: A, B

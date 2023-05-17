@@ -1,5 +1,10 @@
 PROGRAM main
-
+  !> @file main.f90
+  !! @brief Main fortran file which calls other functions from other modules.
+  !! 
+  !! @details This main program calls the functions and subroutines from the pde.f90 file to solve the diffusion equation, given an
+  !! input netcdf file. It contains a checkpoint system as a failsafe during simulation runtime so that the entire simulation is not
+  !! lost in the event of an unforeseen error. 
   USE ISO_FORTRAN_ENV
   USE pde_solver
   use fd_solver

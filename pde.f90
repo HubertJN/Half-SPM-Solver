@@ -33,10 +33,10 @@ CONTAINS
   !!
   !! @param[in] A             The left hand side coefficient matrix of the system 
   !! of equations (please refer to formulation section
-  !! for specific details on the matrix elements
+  !! for specific details on the matrix elements)
   !! @param[in] B             The right hand side coefficient matrix of the system
   !! of equations (please refer to formulation section
-  !! for specific details on the matrix elements.
+  !! for specific details on the matrix elements)
   subroutine setup_crank_nicholson(A, B)
 
     REAL(REAL64), DIMENSION(space_steps,space_steps), intent(inout) :: A, B
@@ -65,28 +65,28 @@ CONTAINS
     ai = dt*mod_dif/(2.0_REAL64*dr*dr)
 
     DO i=2,n-1
-      !>current radius and dimensionless parameter ai
+      !current radius and dimensionless parameter ai
       ri = REAL((i-1),KIND=REAL64)*dr
       
-      !>LHS
+      !LHS
       A(i,i-1) = ai*(-1.0_REAL64 + dr/ri)
       A(i,i) = 1.0_REAL64 + 2.0_REAL64*ai
       A(i,i+1) = ai*(-1.0_REAL64 - dr/ri)
       
-      !>RHS
+      !RHS
       B(i,i-1) = ai*(1.0_REAL64 - dr/ri)
       B(i,i) = 1.0_REAL64 - 2.0_REAL64*ai
       B(i,i+1) = ai*(1.0_REAL64 + dr/ri)      
    END DO
 
-   !>smooth boundary conditions at r=0
+   !smooth boundary conditions at r=0
     
     A(1,1) = 1.0_REAL64 + 2.0_REAL64*ai
     A(1,2) = -2.0_REAL64*ai
     B(1,1) = 1.0_REAL64 - 2.0_REAL64*ai
     B(1,2) = 2.0_REAL64*ai
     
-    !>flux boundary conditions
+    !flux boundary conditions
     A(n,n-1) = -2.0_REAL64*ai
     A(n,n) = 1.0_REAL64 + 2.0_REAL64*ai
     B(n,n-1) = 2.0_REAL64*ai
@@ -106,10 +106,10 @@ CONTAINS
   !!
   !! @param[in] A             The left hand side coefficient matrix of the system 
   !! of equations (please refer to formulation section
-  !! for specific details on the matrix elements
+  !! for specific details on the matrix elements)
   !! @param[in] B             The right hand side coefficient matrix of the system
   !! of equations (please refer to formulation section
-  !! for specific details on the matrix elements.
+  !! for specific details on the matrix elements)
   !! @param[in] c_cur         The current time concentration array inputed into the
   !! Crank-Nicholson solver. 
   FUNCTION crank_nicholson(A, B, c_cur)
@@ -124,7 +124,7 @@ CONTAINS
     INTEGER, DIMENSION(space_steps)                         :: ipiv
     INTEGER(INT32)                                          :: n, info, i, j
     
-    !Get size of input array
+    ! Get size of input array
     n = space_steps
     
     IF(ALLOCATED(rhs)) THEN
@@ -185,7 +185,7 @@ CONTAINS
   !! @details OCV stands for Open Circuit Voltage. Please refer to the paper, 
   !! Chang-Hui Chen et. al. 2020 J. Electrochem Soc. 167 080534
   !!
-  !! @param[in] x                The stoichiometry.
+  !! @param[in] x                The stoichiometry
 
   FUNCTION U_scalar(x)
   
@@ -199,7 +199,7 @@ CONTAINS
     U_scalar = -0.8090_REAL64*x + 4.4875_REAL64 - 0.0428_REAL64*TANH(18.5138_REAL64*(x-0.5542_REAL64)) &
                -17.7326_REAL64*TANH(15.7890_REAL64*(x-0.3117_REAL64)) & 
                +17.5842_REAL64*TANH(15.9308_REAL64*(x-0.3120_REAL64))
-    !!and ESSENTIAL PARAMETERS
+    ! and ESSENTIAL PARAMETERS
                  
   END FUNCTION U_scalar
   
@@ -235,7 +235,7 @@ CONTAINS
   !> @brief Scalar voltage calculator
   !!
   !! @details Calculates scalar voltage when given 
-  !! a SCALAR INPUT of concentration, which is cin.
+  !! a scalar input of concentration
   !! 
   !! @param[in] cin           input concentration
   
@@ -258,14 +258,17 @@ CONTAINS
     
   END FUNCTION volt_scalar
  
-  !> @brief Array version of the function volt_scalar
+  !> @brief Array voltage calculator
   !!
-  !! @param  arrin            array input of concentrations.
+  !! @details Calculates array of voltages when given 
+  !! an array input of concentration.
+  !! 
+  !! @param[in] arrin           array input of concentrations
 
   FUNCTION volt_array(arrin)
     
-    !>Calculates an array of voltages when given 
-    !!an ARRAY INPUT of concentrations
+    !Calculates an array of voltages when given 
+    !an ARRAY INPUT of concentrations
     
    
     REAL(REAL64), DIMENSION(:), INTENT(IN) :: arrin

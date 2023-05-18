@@ -4,7 +4,7 @@ This is a simulation code for a half-cell single particle model (half-SPM model)
 The relevant input parameters can be set in the Jupyter notebook ‘Input_NetCDF.ipynb’ file, which saves the parameters as a NetCDF file. This will be read by the programme, which runs the sumulation and returns visualisatoin of the concentration and (if chosen) of the voltage profile.
 
 ## Getting started
-A Jpyter notebook tutorial is provided to guide the user through the the main features of the simulation package. 
+A Jupyter notebook tutorial is provided to guide the user through the the main features of the simulation package. 
 This is most easily accessed by cloning the GitHub repository to the machine that will be used to run the simulation.
 
 ```
@@ -28,4 +28,8 @@ Important consideration are:
 - time step: if the time steps are set too high, the simulation might take too long to complete
 
 ## Documention
-For more information see our [documentation](./doxygen//Doxyfile).
+For more information see our [documentation](./docs.pdf).
+If the documentation needs to be re-generated, input the following into the command prompt.
+```
+make docs
+```

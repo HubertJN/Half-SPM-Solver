@@ -1,11 +1,12 @@
 #!/bin/bash
 
-num_dat=8
+num_dat=9
 echo Generating Samples
-python3 generate_inp_params_sens.py $num_dat
+python3 generate_inp_params_sens.py
+#python3 generate_inp_params.py $num_dat
 
 echo Generating input file
-for i in {0..8}
+for i in {0..9}
 do
 echo $i
 python3 make_input_file.py $i

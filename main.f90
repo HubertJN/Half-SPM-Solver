@@ -11,7 +11,7 @@ PROGRAM main
   
   IMPLICIT NONE
   
-  !>Overload function for voltage calculation
+  !Overload function for voltage calculation
   INTERFACE volt_calc
     MODULE PROCEDURE volt_scalar
     MODULE PROCEDURE volt_array
@@ -131,8 +131,8 @@ PROGRAM main
   end if
   ts = tc
   
-  !>If starting from a checkpoint then allocate a temporary vector to store the checkpoint concentration
-  !!Otherwise initialise an output file and a checkpoint file and produce the initial concentration vector
+  !If starting from a checkpoint then allocate a temporary vector to store the checkpoint concentration
+  !Otherwise initialise an output file and a checkpoint file and produce the initial concentration vector
   if (checkpoint .eqv. .True.) then
      IF (ALLOCATED(c_tmp)) THEN
         DEALLOCATE(c_tmp)
@@ -155,54 +155,54 @@ PROGRAM main
   end if
   ts = tc
   
-  !>Calculate parameters to be used later
+  !Calculate parameters to be used later
 
-  !>If doing a voltage calculation you need to create a voltage variable in the output file, calculate it, and write it the output file
-  !!These additional steps are added in if voltage_do=.true.
+  !If doing a voltage calculation you need to create a voltage variable in the output file, calculate it, and write it the output file
+  !These additional steps are added in if voltage_do=.true.
   IF (volt_do .eqv. .False.) THEN
 
-     !!If we are starting from a checkpoint, we need the first row of conc to be the next evolution in the output file, so we perform one time step to get this
+     !If we are starting from a checkpoint, we need the first row of conc to be the next evolution in the output file, so we perform one time step to get this
      if (checkpoint .eqv. .True.) then
         conc(:,1) = crank_nicholson(A, B, c_tmp)
      end if
     
-    !!Then we loop over all sim_steps in chunks of out_steps to save the total concentration matrix in blocks
+    !Then we loop over all sim_steps in chunks of out_steps to save the total concentration matrix in blocks
     DO i = 1, (quo-1)
       DO j = 1, (out_steps-1)
          conc(:,(j+1)) = crank_nicholson(A, B, conc(:,j))
       END DO
       
-      !!Now we save the block to the output file keeping track of the number of steps performed including if we start from a checkpoint
-      !!And we save the final concentration vector to the checkpoint file overwriting the existing values
+      !Now we save the block to the output file keeping track of the number of steps performed including if we start from a checkpoint
+      !And we save the final concentration vector to the checkpoint file overwriting the existing values
       step_prog = (((i-1)*out_steps)+1) + tot_steps
       CALL assign_exp_real(conc, output_id, step_prog, var_id_in=conc_out_id)
       call update_checkp(conc(:,out_steps), step_prog)
 
-      !!We then perform one more step to get the first row of the matrix for the next block of steps
+      !We then perform one more step to get the first row of the matrix for the next block of steps
       conc(:,1) = crank_nicholson(A, B, conc(:,out_steps))
    END DO
 
-   !!Once the above is completed for quo-1 blocks, for the final block we dont have to perform the additional time evolution at the end, so this is removed
+   !Once the above is completed for quo-1 blocks, for the final block we dont have to perform the additional time evolution at the end, so this is removed
    DO j = 1, (out_steps-1)
       conc(:,(j+1)) = crank_nicholson(A, B, conc(:,j))
    END DO
       
-   !!Now we save the block to the output file keeping track of the number of steps performed including if we start from a checkpoint
+   !Now we save the block to the output file keeping track of the number of steps performed including if we start from a checkpoint
    !And we save the final concentration vector to the checkpoint file overwriting the existing values
    step_prog = (((i-1)*out_steps)+1) + tot_steps
    CALL assign_exp_real(conc, output_id, step_prog, var_id_in=conc_out_id)
    call update_checkp(conc(:,out_steps), step_prog)
     
   ELSE
-    !!If we are doing a voltage calculation as well, we allocate the voltage vector
+    !If we are doing a voltage calculation as well, we allocate the voltage vector
      ALLOCATE(volt(1, out_steps))
 
-     !!If we aren't starting from a checkpoint, we need to create the voltage variable in the output file
+     !If we aren't starting from a checkpoint, we need to create the voltage variable in the output file
      if (checkpoint .eqv. .False.) then
         call create_exp_var('volt', nf90_double, 1, output_id, units='V', act='add', var_id_out=volt_out_id)
 
-     !!If we are starting from a checkpoint we assume the voltage variable exists
-     !!If we are starting from a checkpoint, we need the first row of conc to be the next evolution in the output file, so we perform one time step to get this
+     !If we are starting from a checkpoint we assume the voltage variable exists
+     !If we are starting from a checkpoint, we need the first row of conc to be the next evolution in the output file, so we perform one time step to get this
      else
         conc(:,1) = crank_nicholson(A, B, c_tmp)
         
@@ -217,7 +217,7 @@ PROGRAM main
      conc_time = 0
      volt_time = 0
      write_time = 0
-     !!Then we loop over all sim_steps in chunks of out_steps to save the total concentration matrix in blocks
+     !Then we loop over all sim_steps in chunks of out_steps to save the total concentration matrix in blocks
      DO i = 1, (quo-1)
         DO j = 1, (out_steps-1)
            call system_clock(ts,rate)
@@ -227,12 +227,12 @@ PROGRAM main
         END DO
         
         call system_clock(ts,rate)
-        !!Now we take the conctration values at the edge of the vectors and use them to calculate the voltages
+        !Now we take the conctration values at the edge of the vectors and use them to calculate the voltages
         volt(1,:) = volt_calc(conc(space_steps,:))
         call system_clock(tc,rate)
         volt_time = volt_time + (tc-ts)
-        !!Now we save the conc block and the voltage vector to the output file keeping track of the number of steps performed including if we start from a checkpoint
-        !!And we save the final concentration vector to the checkpoint file overwriting the existing values
+        !Now we save the conc block and the voltage vector to the output file keeping track of the number of steps performed including if we start from a checkpoint
+        !And we save the final concentration vector to the checkpoint file overwriting the existing values
         call system_clock(ts,rate)
         step_prog = (((i-1)*out_steps)+1) + tot_steps
         CALL assign_exp_real(conc, output_id, step_prog, var_id_in=conc_out_id)
@@ -244,16 +244,16 @@ PROGRAM main
      END DO
 
      call system_clock(ts,rate)
-     !!Once the above is completed for quo-1 blocks, for the final block we dont have to perform the additional time evolution at the end, so this is removed
+     !Once the above is completed for quo-1 blocks, for the final block we dont have to perform the additional time evolution at the end, so this is removed
      DO j = 1, (out_steps-1)
         conc(:,(j+1)) = crank_nicholson(A, B, conc(:,j))
      END DO
 
-     !!Calculate the voltage vector for the final conc block
+     !Calculate the voltage vector for the final conc block
      volt(1,:) = volt_calc(conc(space_steps,:))
 
-     !!Now we save the conc block and the voltage vector to the output file keeping track of the number of steps performed including if we start from a checkpoint
-     !!And we save the final concentration vector to the checkpoint file overwriting the existing values
+     !Now we save the conc block and the voltage vector to the output file keeping track of the number of steps performed including if we start from a checkpoint
+     !And we save the final concentration vector to the checkpoint file overwriting the existing values
      step_prog = (((quo-1)*out_steps)+1) + tot_steps
      CALL assign_exp_real(conc, output_id, step_prog, var_id_in=conc_out_id)
      CALL assign_exp_real(volt, output_id, step_prog, var_id_in=volt_out_id)
@@ -270,7 +270,7 @@ PROGRAM main
      ts = tc
   END IF
 
-  !!Then we close the open output and checkpoint files
+  !Then we close the open output and checkpoint files
   call fin_in_out()
 
   call system_clock(tc,rate)

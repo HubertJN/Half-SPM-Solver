@@ -150,14 +150,14 @@ CONTAINS
     A_mod = A
     
     !generate RHS
-    !!$OMP parallel do default (shared) private(i,j)
-    !Do i=1, space_steps
-    !   Do j=1, space_steps
-    !      rhs(i) = rhs(i) + (B(i, j) * c_cur(j))
-    !   end do
-    !end do
+    !$OMP parallel do default (shared) private(i,j)
+    Do i=1, space_steps
+       Do j=1, space_steps
+          rhs(i) = rhs(i) + (B(i, j) * c_cur(j))
+       end do
+    end do
     
-    rhs = MATMUL(B,c_cur)
+    !rhs = MATMUL(B,c_cur)
    
     rhs(n) = rhs(n) - rhs_const
     

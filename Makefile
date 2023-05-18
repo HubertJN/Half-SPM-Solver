@@ -61,11 +61,11 @@ endif
 ifeq ($(num_threads),1)	
 exe: 		
 		@./test.out
-		@echo "Serial code produced"
+		@echo "Running Serial code"
 else
 exe:
 		@OMP_NUM_THREADS=$(num_threads) ./test.out 
-		@echo "Parallel code produced. Number of threads = " $(num_threads)
+		@echo "Running Parallel code. Number of threads = " $(num_threads)
 endif
 
 

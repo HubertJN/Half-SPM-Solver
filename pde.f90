@@ -12,7 +12,7 @@ MODULE pde_solver
   IMPLICIT NONE
   !> @var real64 rhs_const
   !!
-  !! Rescaled source at the flux boundary given by: \f$ \(dt + \frac{dt}{dr} \) \frac{200 R i_{app}}{3 \epsilon_{actk} F L} \f$
+  !! Rescaled source at the flux boundary given by: \f$ \left(dt + \frac{dt}{dr} \right) \frac{200 R i_{app}}{3 \epsilon_{actk} F L} \f$
   !> @var real64 volt_con_ial
   !!
   !! This is a combination of parameters given by: \f$ \frac{100 i_{app} R}{3 \epsilon_{actk} L} \f$

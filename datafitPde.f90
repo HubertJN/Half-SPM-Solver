@@ -1,4 +1,4 @@
-PROGRAM datafitPde_solver
+MODULE datafitPde_solver
   !> @file datafitPde.f90
   !! @brief Program file for solving the diffusion equation and voltage calculation, called for data fitting. 
   !!
@@ -49,22 +49,22 @@ CONTAINS
   !> @var real64 mod_dif
   !!
   !! The rescaled diffusion coefficient given by: \f$ \frac{D}{R^2} \f$  
-  FUNCTION crank_nicholson(n, D, R, volPer, iapp, F, L, Rg, T, , K, maxCon, c0, timeArr) RESULT(voltArray)
+  FUNCTION crank_nicholson(n, totalTime, D, R, volPer, iapp, F, L, Rg, T, K, maxCon, c0, timeArr) RESULT(voltArray)
 
-    INTEGER(INT32), INTENT(IN)                                      :: n
+    INTEGER(INT32), INTENT(IN)                                      :: n, totalTime
     REAL(REAL64), DIMENSION(:,:), ALLOCATABLE                       :: A, B
     REAL(REAL64),   DIMENSION(:,:), ALLOCATABLE                     :: A_mod
     REAL(REAL64), DIMENSION(n), INTENT(IN)                          :: c0, timeArr
     REAL(REAL64), DIMENSION(:),   ALLOCATABLE                       :: c_cur, rhs
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE                         :: U_scalar
-    REAL(REAL64), DIMENSION(:), ALLOCATABLE                         :: voltArray
+    REAL(REAL64)                                                    :: U_scalar
+    REAL(REAL64), DIMENSION(totalTime), intent(out)                 :: voltArray
     
     REAL(REAL64), INTENT(IN)                                        :: D, R, volPer, iapp, F, L, Rg, T, K, maxCon
     REAL(REAL64)                                                    :: ai, ri, num, fluxParam, dt, dr, &
                                                                        rhsConst, voltConIal, voltConRtf, modD 
     REAL(REAL64)                                                    :: arsinh, div_const !div_const is the stoichiometry.
-    INTEGER(INT32)                                                  :: i, j, info, totalSim, time
-    INTEGER, DIMENSION(:)                                           :: ipiv
+    INTEGER(INT32)                                                  :: i, info, totalSim, time
+    INTEGER, DIMENSION(n)                                           :: ipiv
 
     ALLOCATE(A(n,n))
     ALLOCATE(B(n,n))
@@ -76,9 +76,8 @@ CONTAINS
     
     !----------------------Setup matrices for the system of linear equations: ---------------------
     totalSim = SIZE(timeArr)
-    ALLOCATE(voltArray(totalSim))
 
-    dt = timeArr(1) - timeArr(0)
+    dt = timeArr(2) - timeArr(1)
     dr = 1.0_REAL64/(REAL(n-1, KIND=REAL64))
 
     num = 3.0_REAL64*volPer/(100.0_REAL64*R)
@@ -188,4 +187,4 @@ CONTAINS
     
   END FUNCTION crank_nicholson
 
-END PROGRAM datafitPde_solver
+END MODULE datafitPde_solver

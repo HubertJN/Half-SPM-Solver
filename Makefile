@@ -56,8 +56,8 @@ endif
 %.o: %.f90
 	$(compiler) $(flags) -c $< $(libraries) -o $@
 
-
 #Serial or parallel run
+.PHONY: exe
 ifeq ($(num_threads),1)	
 exe: 		
 		@./test.out
@@ -70,14 +70,17 @@ endif
 
 
 #Generate visualisation
+.PHONY: visual
 visual: 
 	python3 plots.py	
 
 
-
-#Purge build and output files, give no errors if they did not previously exist 
+#Purge build and output files, give no errors if they did not previously exist
+.PHONY: clean
 clean:
 	rm -f *.o *.mod *.nc *chp $(exe)
+	rm -f uq_code/*.nc uq_code/*.csv
+	rm -r uq_code/data_store_sens
 	@echo "Files removed"
 
 
@@ -89,3 +92,7 @@ docs:
 	(cd ./doxygen/output/latex && make)
 	cp ./doxygen/output/latex/refman.pdf docs.pdf
 	ln -s ./doxygen/output/html/index.html docs.html
+
+.PHONY: sensitive
+sensitive:
+	(cd ./uq_code && ./sens_ana.sh)

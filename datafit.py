@@ -6,6 +6,7 @@
 import numpy as np 
 import pandas as pd
 import matplotlib.pyplot as plt
+#import f90_src
 
 
 #Read in the experiental data 
@@ -20,7 +21,7 @@ ind = df['Index']
 ind = ind.to_numpy(ind)
 
 
-#Separate the data in 2 sections and find the minima 
+#Separate the data in 2 sections and find the maxima 
 sec1 = curr[:6770]
 sec2 = curr[6769:]
 potmin = []
@@ -28,19 +29,21 @@ timemin = []
 indices = [] 
 
 for i in range(1, len(sec1)-1):
-    if (curr[i] == 0) and ((curr[i] - curr[i-1]) < 0):# and (curr[i+1] - curr[i]):
+    #if (curr[i] == 0) and ((curr[i] - curr[i-1]) < 0):
+    if (curr[i] == 0) and ((curr[i+1] - curr[i]) > 0):
         potmin.append(pot[i-1])
         timemin.append(t[i-1])
         indices.append(ind[i-1])
 
 for i in range(6769, 6769+len(sec2)-1):
-    if (curr[i] == 0) and ((curr[i+1] - curr[i]) > 0):# and (curr[i+1] - curr[i]):
+    #if (curr[i] == 0) and ((curr[i+1] - curr[i]) > 0):
+    if (curr[i] == 0) and ((curr[i] - curr[i-1]) < 0):
         potmin.append(pot[i+1])
         timemin.append(t[i+1])
         indices.append(ind[i+1])
 
 
-#Clean up the irrelevant minima 
+#Clean up the irrelevant maxima
 potmin = np.array(potmin)
 timemin = np.array(timemin)
 indices = np.array(indices)
@@ -59,7 +62,7 @@ plt.plot(t, pot)
 #uncomment to zoom in at a particular time section
 #plt.xlim(100000,110000)
 
-#Plots the minima 
+#Plots the maxima
 #plt.plot(timemin, potmin, 'x')
 
 #Plots the chunk 

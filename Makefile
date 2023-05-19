@@ -9,12 +9,15 @@ compiler=gfortran #-O3 #-Wall -Wextra
 #set to 1 to run in serial
 num_threads=1
 
+#Perform data fit? 1 = yes, 0 = no
+fit = 0
+
 flags=`nf-config --fflags` 
 
 ifeq ($(num_threads),1)	
 	libraries=`nf-config --flibs` -llapack 
 else 
-	libraries=`nf-config --flibs` -llapack -fopenmp
+	libraries=`nf-config --flibs` -llapack -fopenmp 
 endif
 
 main=main.f90
@@ -22,11 +25,17 @@ main=main.f90
 exe=test.out
 
 object=input_output_netcdf.o pde.o
+f2pyfiles=pde.f90
 
 #Compile line
 test.out: $(object)
 		$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
 		rm -f *.o *.mod
+		
+#f2py compile line 
+ifeq($(fit),1)	
+	f2py-f90wrap -c -m f90_src $f2pyfiles -llapack 
+endif 
 
 
 #Checking if object files created 
@@ -79,7 +88,6 @@ visual:
 clean:
 	rm -f *.o *.mod *.nc *chp $(exe)
 	@echo "Files removed"
-
 
 
 #Generate Doxygen documentation

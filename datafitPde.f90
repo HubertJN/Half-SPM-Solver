@@ -49,19 +49,19 @@ CONTAINS
   !> @var real64 mod_dif
   !!
   !! The rescaled diffusion coefficient given by: \f$ \frac{D}{R^2} \f$  
-  FUNCTION crank_nicholson(n, totalTime, D, R, volPer, iapp, F, L, Rg, T, K, maxCon, c0, timeArr) RESULT(voltArray)
+  FUNCTION crank_nicholson(n, totalTime, D, R, volPer, iapp, F, L, Rg, T, K, maxCon, c0, dt) RESULT(voltArray)
 
     INTEGER(4), INTENT(IN)                                      :: n, totalTime
     REAL(8), DIMENSION(:,:), ALLOCATABLE                       :: A, B
     REAL(8),   DIMENSION(:,:), ALLOCATABLE                     :: A_mod
-    REAL(8), DIMENSION(:), INTENT(IN)                          :: timeArr
+    !REAL(8), DIMENSION(:), INTENT(IN)                          :: timeArr
     REAL(8), DIMENSION(n), INTENT(IN)                          :: c0
     REAL(8), DIMENSION(:),   ALLOCATABLE                       :: c_cur, rhs
     REAL(8)                                                    :: U_scalar
     REAL(8), DIMENSION(totalTime)                :: voltArray
     
-    REAL(8), INTENT(IN)                                        :: D, R, volPer, iapp, F, L, Rg, T, K, maxCon
-    REAL(8)                                                    :: ai, ri, num, fluxParam, dt, dr, &
+    REAL(8), INTENT(IN)                                        :: D, R, volPer, iapp, F, L, Rg, T, K, maxCon, dt
+    REAL(8)                                                    :: ai, ri, num, fluxParam, dr, &
                                                                        rhsConst, voltConIal, voltConRtf, modD 
     REAL(8)                                                    :: arsinh, div_const !div_const is the stoichiometry.
     INTEGER(4)                                                  :: i, info, totalSim, time
@@ -76,9 +76,9 @@ CONTAINS
     END IF
     
     !----------------------Setup matrices for the system of linear equations: ---------------------
-    totalSim = SIZE(timeArr)
+  !  totalSim = SIZE(timeArr)
 
-    dt = timeArr(2) - timeArr(1)
+   ! dt = timeArr(2) - timeArr(1)
     dr = 1.0d0/(REAL(n-1, 8))
 
     num = 3.0d0*volPer/(100.0d0*R)
@@ -131,7 +131,7 @@ CONTAINS
       IF(ALLOCATED(rhs)) THEN
         DEALLOCATE(rhs)
       END IF
-      ALLOCATE(c_cur(n))
+     
       
 
       IF (ALLOCATED(A_mod)) THEN

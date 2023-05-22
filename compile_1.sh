@@ -1,6 +1,7 @@
 #!/bin/bash
-#chmod u+r+x compile.sh if permission denied
+chmod u+r+x compile.sh if permission denied
 
+sudo apt install python3.10-venv
 python3 -m venv venv
 source venv/bin/activate
 vim requirements.txt - names of mods

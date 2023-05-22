@@ -26,6 +26,23 @@ The notebook provides slider bars and input cell that allow to change the input 
 
 Important consideration are:
 - time step: if the time steps are set too high, the simulation might take too long to complete
+- SOC and applied current: at 0 or 100% state of charge (SOC), the applied current should be set positive (charging) or negative (discharging/use), respectively
+- If an anode material is being simulated, it will still be the positive electrode with respect to lithium in this half-cell SMP model and the parameters need to be set accordingly
+
+## Running the simulation
+Once the input parameters are set and the 'SPM_input.nc' file has been created, the simulation can be run using the provided Makefile. 
+To compile the code the command is:
+```
+make
+```
+To run the simulation, the command is:
+```
+make exe
+```
+To visualise the output, the command is:
+```
+make visual
+```
 
 ## Documention
 For more information see our [documentation](./docs.pdf).

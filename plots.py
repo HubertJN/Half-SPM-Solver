@@ -95,13 +95,15 @@ rs = np.linspace(0,rad,r_steps,endpoint=True)
 rs = rs[::-1]
 cinv = c[:,::-1]
 
-#draw patches of circles and add them to collection
+#draw patches of circles
 #zorder to ensure smallest circle is on top
 patches = []
 for i, r in enumerate(rs):
     circle = mpl.patches.Circle((0,0), r, zorder=i)
     patches.append(circle)
-    
+
+#set limits for colourmap and set colours of circles for initial plot
+#add circles to collection    
 p = mpl.collections.PatchCollection(patches, cmap=colour)
 p.set_clim([min_colour,max_colour])
 colours = np.array(c[0,:])

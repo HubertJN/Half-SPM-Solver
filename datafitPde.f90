@@ -63,8 +63,8 @@ CONTAINS
     REAL(8), INTENT(IN)                                        :: D, R, volPer, iapp, F, L, Rg, T, K, maxCon, dt
     REAL(8)                                                    :: ai, ri, num, fluxParam, dr, &
                                                                        rhsConst, voltConIal, voltConRtf, modD 
-    REAL(8)                                                    :: arsinh, div_const !div_const is the stoichiometry.
-    INTEGER(4)                                                  :: i, info, totalSim, time
+    REAL(8)                                                    ::  arsinh, div_const !div_const is the stoichiometry.
+    INTEGER(4)                                                  :: i, info, time, totalSim
     INTEGER, DIMENSION(n)                                           :: ipiv
 
     ALLOCATE(A(n,n))
@@ -77,7 +77,8 @@ CONTAINS
     
     !----------------------Setup matrices for the system of linear equations: ---------------------
   !  totalSim = SIZE(timeArr)
-
+    totalSim = totaltime
+   ! totalSim = floor(totalTime/dt)
    ! dt = timeArr(2) - timeArr(1)
     dr = 1.0d0/(REAL(n-1, 8))
 

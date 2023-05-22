@@ -11,6 +11,7 @@ from matplotlib.animation import FuncAnimation
 # reading in the NetCDF data from SP_output.nc
 dat = NC.Dataset("SP_output.nc", "r", format="NETCDF4")
 do_volt = dat['volt_do'][:][0]
+dt = dat['dt'][:][0]
 
 #creating figure and axes dependent on whether voltage data is to be written or not
 if do_volt == 1:
@@ -61,7 +62,7 @@ def animate(t):
 animation = FuncAnimation(fig, animate, interval=intervaltime, frames=time_axis, blit=True)
 
 # customise the graph with axes labels, major and minor ticks, labels etc.
-ax1.set_xlabel('particle radius [$\mu m$]', size=8)
+ax1.set_xlabel('Distance from particle centre [$\mu m$]', size=8)
 ax1.xaxis.set_minor_locator(AutoMinorLocator())
 ax1.tick_params(axis='x', labelsize=7)
 ax1.set_ylabel('Lithium concentration $mol*m^{-3}$', size=8)
@@ -71,7 +72,7 @@ ax1.tick_params(axis='y', labelsize=7)
 ax1.ticklabel_format(axis='both', style="sci", useMathText=True)
 ax1.xaxis.offsetText.set_fontsize(7)
 ax1.yaxis.offsetText.set_fontsize(7)
-ax1.set_title('Lithium concentration', size=10, pad=15.0)
+ax1.set_title('Lithium Concentration Across Particle Radius', size=10, pad=15.0)
 
 # Subplot 2 - pcolorplot of concentration data
 
@@ -85,61 +86,55 @@ colour.set_under(color='w')
 colour.set_over(color='k')
 max_colour = np.max(c)
 min_colour = np.min(c)
-ticklist = np.linspace(c.min(), c.max(), 6)
+colour_range = max_colour - min_colour
+ticklist = np.linspace(min_colour, max_colour, 6)
 
 #create grid for plotting
-x = np.linspace(-rad,rad,r_steps,endpoint=True)
-y = np.linspace(-rad,rad,r_steps,endpoint=True)
+#invert arrays to make sure smallest circle is on top
+rs = np.linspace(0,rad,r_steps,endpoint=True)
+rs = rs[::-1]
+cinv = c[:,::-1]
 
-# form 2D array of radii
-z = np.array([np.sqrt(i*i+j*j) for j in y for i in x])
+#draw patches of circles and add them to collection
+#zorder to ensure smallest circle is on top
+patches = []
+for i, r in enumerate(rs):
+    circle = mpl.patches.Circle((0,0), r, zorder=i)
+    patches.append(circle)
+    
+p = mpl.collections.PatchCollection(patches, cmap=colour)
+p.set_clim([min_colour,max_colour])
+colours = np.array(c[0,:])
+p.set_array(colours)
+ax2.add_collection(p)
 
-# form concentration values; give negative concentration for colourmap if out of range - goes white
-for idx, r in enumerate(z):
-	if (r <= rad):
-		ri = np.rint(r/dr).astype(np.int32)
-		z[idx] = c[0,:][ri]
-	else:
-		z[idx] = -1
-
-# reshape to form 2D array for pcolor
-Z = z.reshape(r_steps,r_steps)
-
-# form meshgrid and plot using pcolor
-X, Y = np.meshgrid(x,y)
-cplot = ax2.pcolor(X,Y,Z, cmap=colour, vmin=min_colour, vmax=max_colour, edgecolors='face')
-ax2.set_xlabel('particle radius [$\mu m$]', size=8)
+#set figure labels
+ax2.set_xlim(-rad,rad)
+ax2.set_ylim(-rad,rad)
+ax2.set_xlabel('Distance from particle centre [$\mu m$]', size=8)
 ax2.xaxis.set_minor_locator(AutoMinorLocator())
 ax2.tick_params(axis='x', labelsize=7)
-ax2.set_ylabel('particle radius [$\mu m$]', size=8)
+ax2.set_ylabel('Distance from particle centre [$\mu m$]', size=8)
 ax2.yaxis.set_minor_locator(AutoMinorLocator())
 ax2.tick_params(axis='y', labelsize=7)
 ax2.ticklabel_format(axis='both', style="sci", useMathText=True)
 ax2.xaxis.offsetText.set_fontsize(7)
 ax2.yaxis.offsetText.set_fontsize(7)
-ax2.set_title('concentration coloured contour plot', size=10, pad=15.0)
-cbar = ax2.figure.colorbar(cplot, ax=ax2, cmap=colour, ticks=ticklist)
+ax2.set_title('Contour Plot of Concentration inside Particle', size=10, pad=15.0)
+cbar = ax2.figure.colorbar(p, ax=ax2, cmap=colour, ticks=ticklist)
 cbar.ax.tick_params(labelsize=7)
-cbar.ax.set_ylabel('Lithium concentration', size=8)
+cbar.ax.set_ylabel('Lithium concentration $mol*m^{-3}$', size=8)
 cbar.ax.yaxis.set_major_formatter(StrMethodFormatter("{x:.10f}"))
 
-# animation function for the pcolor plot animation
-# works generally the same as for subplot 1
-# the concentration data for each timestep is created as in the pcolor plot above
-# while iterating through the time dimension of the concentratoin data
-# the resulting 2D array is flattened in the end to an 1D array that can be used by FuncAnimation
+# animation function for the circle plot animation
+#only changes the colours of the circles without redrawing them
+# the concentration data for each timestep is feeded into a colour map
 # the inteval and frames are the same as in subplot 1 and blitting is set to true
 def animate_pcol(t):
-    z =  np.array([np.sqrt(i*i+j*j) for j in y for i in x])
-    for idx, r in enumerate(z):
-	    if (r <= rad):
-		    ri = np.rint(r/dr).astype(np.int32)
-		    z[idx] = c[t,:][ri]
-	    else:
-		    z[idx] = -1
-    Z = z.reshape(r_steps,r_steps)
-    cplot.set_array(Z.flatten())
-    return cplot,
+    colours = np.array(c[t,:])
+    p.set_array(colours)
+    
+    return p,
 
 animation_pcol = FuncAnimation(fig, animate_pcol, interval=intervaltime, frames=time_axis, blit=True)
 
@@ -151,8 +146,8 @@ if do_volt == 1:
 	time = np.linspace(0, t_steps, t_steps)
 
 	# plotting the 2D graph and customising it
-	ax3.plot(time, volt)
-	ax3.set_xlabel('Step Number', size=8)
+	ax3.plot(time*dt, volt)
+	ax3.set_xlabel('Time [s]', size=8)
 	ax3.xaxis.set_minor_locator(AutoMinorLocator())
 	ax3.tick_params(axis='x', labelsize=7)
 	ax3.set_ylabel('Voltage [V]', size=8)
@@ -165,11 +160,11 @@ if do_volt == 1:
 
 	# animation of an curser that moves with the time axis with the same interval and frames
 	# as the other two animations
-	vl = ax3.axvline(time[0], color='black', linestyle=':')
+	vl = ax3.axvline(time[0]*dt, color='black', linestyle=':')
 	ax3.set_xlim()
 
 	def animate_t_bar(t):
-		vl.set_xdata(time[t])
+		vl.set_xdata(time[t]*dt)
 		return vl,
 
 	animation_t_bar = FuncAnimation(fig, animate_t_bar, interval=intervaltime, frames=time_axis, blit=True)

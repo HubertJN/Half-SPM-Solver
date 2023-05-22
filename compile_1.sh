@@ -1,14 +1,12 @@
 #!/bin/bash
-chmod u+r+x compile.sh if permission denied
+#chmod u+r+x compile.sh if permission denied
 
-sudo apt install python3.10-venv
+#sudo apt install python3.10-venv
 python3 -m venv venv
 source venv/bin/activate
 #vim requirements.txt - names of mods
-#pip install requirements.txt 
-#pip install pandas
-#pip install matplotlib
-pip freeze list >> requirements.txt - add all existing modules to requirements
+pip install requirements.txt 
+#pip freeze list >> requirements.txt - add all existing modules to requirements
 #deactivate
 
 

@@ -48,24 +48,24 @@ CONTAINS
   !! This is a combination of parameters given by: \f$ \frac{2 R_g T}{F} \f$
   !> @var real64 mod_dif
   !!
-  !! The rescaled diffusion coefficient given by: \f$ \frac{D}{R^2} \f$  
+  !! The rescaled diffusion coefficient given by: \f$ \frac{D}{R^2} \f$ 
+  !! ipiv - pivotal arrays used by dgesv (link to dgesv lapack) 
   FUNCTION crank_nicholson(n, totalTime, D, R, volPer, iapp, F, L, Rg, T, K, maxCon, c0, dt) RESULT(voltArray)
 
-    INTEGER(4), INTENT(IN)                                      :: n, totalTime
+    INTEGER(4), INTENT(IN)                                     :: n, totalTime
     REAL(8), DIMENSION(:,:), ALLOCATABLE                       :: A, B
     REAL(8),   DIMENSION(:,:), ALLOCATABLE                     :: A_mod
-    !REAL(8), DIMENSION(:), INTENT(IN)                          :: timeArr
     REAL(8), DIMENSION(n), INTENT(IN)                          :: c0
     REAL(8), DIMENSION(:),   ALLOCATABLE                       :: c_cur, rhs
     REAL(8)                                                    :: U_scalar
-    REAL(8), DIMENSION(totalTime)                :: voltArray
+    REAL(8), DIMENSION(totalTime)                              :: voltArray
     
     REAL(8), INTENT(IN)                                        :: D, R, volPer, iapp, F, L, Rg, T, K, maxCon, dt
     REAL(8)                                                    :: ai, ri, num, fluxParam, dr, &
                                                                        rhsConst, voltConIal, voltConRtf, modD 
     REAL(8)                                                    ::  arsinh, div_const !div_const is the stoichiometry.
-    INTEGER(4)                                                  :: i, info, time, totalSim
-    INTEGER, DIMENSION(n)                                           :: ipiv
+    INTEGER(4)                                                 :: i, info, time
+    INTEGER, DIMENSION(n)                                      :: ipiv
 
     ALLOCATE(A(n,n))
     ALLOCATE(B(n,n))
@@ -75,11 +75,7 @@ CONTAINS
       STOP
     END IF
     
-    !----------------------Setup matrices for the system of linear equations: ---------------------
-  !  totalSim = SIZE(timeArr)
-    totalSim = totaltime
-   ! totalSim = floor(totalTime/dt)
-   ! dt = timeArr(2) - timeArr(1)
+   !----------------------Setup matrices for the system of linear equations: ---------------------
     dr = 1.0d0/(REAL(n-1, 8))
 
     num = 3.0d0*volPer/(100.0d0*R)
@@ -123,27 +119,22 @@ CONTAINS
     B(n,n) = 1.0d0 - 2.0d0*ai
 
     rhsConst = 2.0d0*fluxParam*(dt + dt/dr)
+    print *, 'flux: ', rhsConst
     !------------------------------------------------------------------------------------------
     !-------------------------------Run the solver over the time array: -----------------------
     ALLOCATE(c_cur(n))
+    ALLOCATE(rhs(n))
+    c_cur = 0.0d0
+    rhs = 0.0d0
 
-    DO time = 1, totalSim
-    
-      IF(ALLOCATED(rhs)) THEN
-        DEALLOCATE(rhs)
-      END IF
-     
-      
+    DO time = 1, totalTime
 
       IF (ALLOCATED(A_mod)) THEN
         DEALLOCATE(A_mod)
       END IF
       
-      ALLOCATE(rhs(n))
       ALLOCATE(A_mod(n,n))
       
-      rhs = 0.0d0
-      c_cur = 0.0d0
       
       A_mod = A
       !Use initial concentration at first timestep, otherwise use previour timestep concentration. 
@@ -169,6 +160,7 @@ CONTAINS
       
       !Assign solution to output matrix
       c_cur = rhs
+      !print *, 'Current concentration: ', c_cur
    
       !--------------------------Calculate stoichiometry: -----------------------------------------------
       div_const = c_cur(n)/maxCon
@@ -181,6 +173,11 @@ CONTAINS
       arsinh = voltConIal/arsinh
       arsinh = ASINH(arsinh)
       !----------------------------Calculate the voltage: ----------------------------------------------
+      !Checking precisions:
+      !print *, 'U_scalar precision: ', KIND(U_scalar)
+      !print *, 'voltConRtf precision: ', KIND(voltConRtf)
+      !print *, 'arsinh precision: ', KIND(arsinh)
+      !print *, 'voltage precision: ', KIND(voltArray)
       voltArray(time) = U_scalar - (voltConRtf*arsinh)
     END DO
 

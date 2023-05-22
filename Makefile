@@ -26,7 +26,7 @@ object=input_output_netcdf.o pde.o
 #Compile line
 test.out: $(object)
 		$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
-		rm -f *.o *.mod
+		-rm -f *.o *.mod
 
 
 #Checking if object files created 
@@ -78,9 +78,10 @@ visual:
 #Purge build and output files, give no errors if they did not previously exist
 .PHONY: clean
 clean:
-	rm -f *.o *.mod *.nc *chp $(exe)
-	rm -f uq_code/*.nc uq_code/*.csv
-	rm -r uq_code/data_store_sens
+	-rm -f *.o *.mod *.nc *chp $(exe)
+	-rm -f uq_code/*.nc uq_code/*.csv uq_code/*.chp
+	-rm -r uq_code/data_store_sens
+	-rm -r uq_code/data_store_up
 	@echo "Files removed"
 
 
@@ -96,3 +97,7 @@ docs:
 .PHONY: sensitive
 sensitive:
 	(cd ./uq_code && ./sens_ana.sh)
+
+.PHONY: uncertain
+uncertain:
+	(cd ./uq_code && ./up_code.sh)

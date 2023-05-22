@@ -74,6 +74,6 @@ dt[0] = Dt
 out_steps[0] = Out_steps
 space_steps[0] = Space_steps
 volt_do[0] = Volt_do
-checkpoint[0] = Checkpoint
+checkpoint[0] = 0 #Checkpoint
 #closing the NetCDF file
 rootgrp.close()

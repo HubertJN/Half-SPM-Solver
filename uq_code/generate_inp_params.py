@@ -2,47 +2,132 @@ import numpy as np
 import pandas as pd
 import scipy.stats as st
 from scipy.stats import qmc
+import netCDF4 as nc
 import sys
 
-num_dat = int(sys.argv[1])
-num_vars = 9
+inp = nc.Dataset('SPM_input_ori.nc', "r", format='NETCDF4')
+dat_size = inp['no_samples'][:][0]
 
-ent = 1
-temp = st.norm(294.15, ent)
-rad  = st.norm(5.22e-6, ent)
-thick = st.norm(75.6e-6, ent)
-rr_coef = st.norm(3.42, ent)
-dif_coef = st.norm(1.48e-15, ent)
-init_c = st.norm(47023.326, ent)
-max_c = st.norm(51765.0, ent)
-vol_per = st.norm(66.5, ent)
-iapp = st.norm(48.685491723466406, ent)
+data = np.empty((dat_size, 9))
+imported = np.zeros(9)
+dists = []
+
+try:
+    temp_sd = inp['temp_std'][:][0]
+    temp = inp['temp'][:][0]
+    temp_dis = st.norm(temp, temp_sd)
+    dists.append(temp_dis)
+    imported[0] = 1
+except:
+    temp = inp['temp'][:][0]
+    data[:, 0] = temp
+
+try:
+    rad_sd = inp['rad_std'][:][0]
+    rad = inp['rad'][:][0]
+    rad_dis = st.norm(rad, rad_sd)
+    dists.append(rad_dis)
+    imported[1] = 1
+except:
+    rad = inp['rad'][:][0]
+    data[:, 1] = rad
+
+try:
+    thick_sd = inp['thick_std'][:][0]
+    thick = inp['thick'][:][0]
+    thick_dis = st.norm(thick, thick_sd)
+    dists.append(thick_dis)
+    imported[2] = 1
+except:
+    thick = inp['thick'][:][0]
+    data[:, 2] = thick
+    
+try:
+    rr_coef_sd = inp['rr_coef_std'][:][0]
+    rr_coef = inp['rr_coef'][:][0]
+    rr_coef_dis = st.norm(rr_coef, rr_coef_sd)
+    dists.append(rr_coef_dis)
+    imported[3] = 1
+except:
+    rr_coef = inp['rr_coef'][:][0]
+    data[:, 3] = rr_coef
+    
+try:
+    dif_coef_sd = inp['dif_coef_std'][:][0]
+    dif_coef = inp['dif_coef'][:][0]
+    dif_coef_dis = st.norm(dif_coef, dif_coef_sd)
+    dists.append(dif_coef_dis)
+    imported[4] = 1
+except:
+    dif_coef = inp['dif_coef'][:][0]
+    data[:, 4] = dif_coef
+    
+try:
+    init_c_sd = inp['init_c_std'][:][0]
+    init_c = inp['init_c'][:][0]
+    init_c_dis = st.norm(init_c, init_c_sd)
+    dists.append(init_c_dis)
+    imported[5] = 1
+except:
+    init_c = inp['init_c'][:][0]
+    data[:, 5] = init_c
+    
+try:
+    max_c_sd = inp['max_c_std'][:][0]
+    max_c = inp['max_c'][:][0]
+    max_c_dis = st.norm(max_c, max_c_sd)
+    dists.append(max_c_dis)
+    imported[6] = 1
+except:
+    max_c = inp['max_c'][:][0]
+    data[:, 6] = max_c
+    
+try:
+    vol_per_sd = inp['vol_per_std'][:][0]
+    vol_per = inp['vol_per'][:][0]
+    vol_per_dis = st.norm(vol_per, vol_per_sd)
+    dists.append(vol_per_dis)
+    imported[7] = 1
+except:
+    vol_per = inp['vol_per'][:][0]
+    data[:, 7] = vol_per
+    
+try:
+    iapp_sd  = inp['iapp_std'][:][0]
+    iapp = inp['iapp'][:][0]
+    iapp_dis = st.norm(iapp, iapp_sd)
+    dists.append(iapp_dis)
+    imported[8] = 1
+except:
+    iapp = inp['iapp'][:][0]
+    data[:, 8] = iapp
+    
+num_vars = int(np.sum(imported))
 
 sampler = qmc.LatinHypercube(d=num_vars)
-sample = sampler.random(n=num_dat)
-dat = np.empty((num_dat, num_vars))
+sample = sampler.random(n=dat_size)
 
-dat[:, 0] = temp.ppf(sample[:, 0])
-dat[:, 1] = rad.ppf(sample[:, 1])
-dat[:, 2] = thick.ppf(sample[:, 2])
-dat[:, 3] = rr_coef.ppf(sample[:, 3])
-dat[:, 4] = dif_coef.ppf(sample[:, 4])
-dat[:, 5] = init_c.ppf(sample[:, 5])
-dat[:, 6] = max_c.ppf(sample[:, 6])
-dat[:, 7] = vol_per.ppf(sample[:, 7])
-dat[:, 8] = iapp.ppf(sample[:, 8])
+j = 0
+for i in range(9):
+    if (imported[i] == 1):
+        data[:, i] = dists[j].ppf(sample[:, j])
+        j += 1
+    else:
+        continue
 
-dat[0, :] = [temp.mean(), rad.mean(), thick.mean(), rr_coef.mean(), dif_coef.mean(), init_c.mean(), max_c.mean(), vol_per.mean(), iapp.mean()]
+data[0, :] = [temp, rad, thick, rr_coef, dif_coef, init_c, max_c, vol_per, iapp]
 
-dat_fram = {'temp': dat[:, 0],
-            'rad': dat[:, 1],
-            'thick': dat[:, 2],
-            'rr_coef': dat[:, 3],
-            'dif_coef': dat[:, 4],
-            'init_c': dat[:, 5],
-            'max_c': dat[:, 6],
-            'vol_per': dat[:, 7],
-            'iapp': dat[:, 8],
+dat_fram = {'temp': data[:, 0],
+            'rad': data[:, 1],
+            'thick': data[:, 2],
+            'rr_coef': data[:, 3],
+            'dif_coef': data[:, 4],
+            'init_c': data[:, 5],
+            'max_c': data[:, 6],
+            'vol_per': data[:, 7],
+            'iapp': data[:, 8],
             }
 df = pd.DataFrame(dat_fram, columns=['temp', 'rad', 'thick', 'rr_coef', 'dif_coef', 'init_c', 'max_c', 'vol_per', 'iapp'])
 df.to_csv('data.csv', index=False)
+
+print(dat_size)

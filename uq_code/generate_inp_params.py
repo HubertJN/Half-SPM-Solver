@@ -140,8 +140,7 @@ dat_fram = {'temp': data[:, 0],
 df = pd.DataFrame(dat_fram, columns=['temp', 'rad', 'thick', 'rr_coef', 'dif_coef', 'init_c', 'max_c', 'vol_per', 'iapp'])
 df.to_csv('data.csv', index=False)
 
-a = True
-if (a == True):
+if (sys.argv[1] == 'True'):
     sim_steps = inp['sim_steps'][:][0]
     dV_dx = np.empty((9, sim_steps))
     

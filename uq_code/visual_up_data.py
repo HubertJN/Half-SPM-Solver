@@ -39,8 +39,7 @@ plt.xlabel('Step Number')
 plt.ylabel('Voltage [V]')
 plt.grid()
 
-a = True
-if (a == True):
+if (sys.argv[2] == 'True'):
     std_V_dat = pd.read_csv('./std_V_dat.csv')
 
     std_V = np.array(std_V_dat['std_V'][:])

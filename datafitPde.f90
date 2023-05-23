@@ -2,9 +2,9 @@ MODULE datafitPde
   !> @file datafitPde.f90
   !! @brief Program file for solving the diffusion equation and voltage calculation, called for data fitting. 
   !!
-  !! @details This contains the subroutines necessary for evolving the state of the system under diffusion and 
-  !! calculating the voltage for each simulation timestep. The program contains one singular function which outputs the voltage
-  !! so that it can be called in python using f2py and f90wrap for optimisation purposes. 
+  !! @details This contains the function necessary for evolving the state of the system under diffusion and 
+  !! calculating the voltage for all simulation timesteps. The program contains one singular function which outputs the voltage at
+  !! all simulation timesteps so that it can be called in python using f2py for optimisation purposes. 
 
   USE ISO_FORTRAN_ENV
   !$  use omp_lib
@@ -19,37 +19,52 @@ CONTAINS
   !! and a constant \f$ i_{app} \f$
   !! using the Crank-Nicholson algorithm.
   !! The function uses the LAPACK library, calling the dgesv function for solving systems
-  !! of linear equations to evolve the given state by one timestep.
+  !! of linear equations to evolve the given state for a certain amount of timesteps.
   !!
   !! @brief Function to calculate the positive electrode OCV curve, \f$ U(c) \f$.
   !!
   !! @details OCV stands for Open Circuit Voltage. Please refer to the paper, 
   !! Chang-Hui Chen et. al. 2020 J. Electrochem Soc. 167 080534
   !!
-  !! @param[in] x                The stoichiometry, as an array
+  !! @param[in] n                The number of nodes in the concentration profile.
   !!
-  !! @param[in] A             The left hand side coefficient matrix of the system 
-  !! of equations (please refer to formulation section
-  !! for specific details on the matrix elements)
-  !! @param[in] B             The right hand side coefficient matrix of the system
-  !! of equations (please refer to formulation section
-  !! for specific details on the matrix elements)
-  !! @param[in] c0         The current time concentration array inputed into the
-  !! Crank-Nicholson solver. 
+  !! @param[in] totalTime        The total number of simulation timesteps (integer).
   !!
-  !! @var real64 rhs_const
+  !! @param[in] D                The diffusion coefficient, \f$ D \f$
   !!
-  !! Rescaled source at the flux boundary given by: \f$ \left(dt + \frac{dt}{dr} \right) \frac{200 R i_{app}}{3 \epsilon_{actk} F L} \f$
-  !> @var real64 volt_con_ial
+  !! It has units of \f$ m^2 s^{-1} \f$
+  !! @param[in] R                The radius of the particle,\f$ R \f$
   !!
-  !! This is a combination of parameters given by: \f$ \frac{100 i_{app} R}{3 \epsilon_{actk} L} \f$
-  !> @var real64 volt_con_rtf
+  !! It has units of \f$ m \f$
+  !! @param[in] volPer           The active material volume fraction, \f$ \epsilon_{actk} \f$
   !!
-  !! This is a combination of parameters given by: \f$ \frac{2 R_g T}{F} \f$
-  !> @var real64 mod_dif
+  !! @param[in] iapp             The applied current density, constant, \f$ i_{app} \f$
   !!
-  !! The rescaled diffusion coefficient given by: \f$ \frac{D}{R^2} \f$ 
-  !! ipiv - pivotal arrays used by dgesv (link to dgesv lapack) 
+  !! It has units of \f$ A m^{-2} \f$
+  !! @param[in] F                The faraday constant
+  !!
+  !! It has units of \f$ C mol^{-1} \f$
+  !! @param[in] L                The thickness of the electrode, \f$ L \f$
+  !!
+  !! It has units of \f$ m \f$
+  !! @param[in] Rg               The ideal gas constant, \f$ R_g \f$
+  !!
+  !! It has units of \f$ J K^{-1} mol^{-1} \f$
+  !! @param[in] T                The temperature of the simulation, \f$ T \f$
+  !!
+  !! It has units of \f$ K \f$
+  !! @param[in] K                The reaction rate coefficient, \f$ K \f$
+  !!
+  !! It has units of \f$ A m^2 \left(m^3 mol^{-1} \right)^(1.5) \f$
+  !! @param[in] maxCon           The maximum concentration of the simulation, \f$ c_{max} \f$
+  !!
+  !! It has units of \f$ mol m^{-3} \f$
+  !! @param[in] c0         The initial concentration array inputed, \f$ c_0 \f$ 
+  !!
+  !! It has units of \f$ mol m^{-3} \f$
+  !! @param[in] dt         The timestep of the simulation, \f$ \Delta t \f$
+  !!
+  !! It has units of \f$ s \f$
   FUNCTION crank_nicholson(n, totalTime, D, R, volPer, iapp, F, L, Rg, T, K, maxCon, c0, dt) RESULT(voltArray)
 
     INTEGER(4), INTENT(IN)                                     :: n, totalTime
@@ -164,23 +179,18 @@ CONTAINS
       c_cur = rhs
    
       !--------------------------Calculate stoichiometry: -----------------------------------------------
-      IF (c_cur(n) < 0.0) THEN
-        PRINT *, 'Concentration at the boundary has reached minimum at iteration time ', time
-        voltArray(time) = voltArray(time-1)
-      ELSE
-        div_const = c_cur(n)/maxCon
-        !------------------------U+ implemented (U- can be implemented later if needed): -----------------
-        U_scalar = -0.8090d0*div_const + 4.4875d0 - 0.0428d0*TANH(18.5138d0*(div_const-0.5542d0)) &
-                -17.7326d0*TANH(15.7890d0*(div_const-0.3117d0)) & 
-                +17.5842d0*TANH(15.9308d0*(div_const-0.3120d0))
-        !----------------------------Calculate arsinh part: ----------------------------------------------
-        arsinh = F*K*SQRT(div_const - (div_const**2))
-        arsinh = voltConIal/arsinh
-        arsinh = ASINH(arsinh)
-        !----------------------------Calculate the voltage: ----------------------------------------------
-        !Checking precisions:
-        voltArray(time) = U_scalar - (voltConRtf*arsinh)
-      END IF
+      div_const = c_cur(n)/maxCon
+      !------------------------U+ implemented (U- can be implemented later if needed): -----------------
+      U_scalar = -0.8090d0*div_const + 4.4875d0 - 0.0428d0*TANH(18.5138d0*(div_const-0.5542d0)) &
+              -17.7326d0*TANH(15.7890d0*(div_const-0.3117d0)) & 
+              +17.5842d0*TANH(15.9308d0*(div_const-0.3120d0))
+      !----------------------------Calculate arsinh part: ----------------------------------------------
+      arsinh = F*K*SQRT(div_const - (div_const**2))
+      arsinh = voltConIal/arsinh
+      arsinh = ASINH(arsinh)
+      !----------------------------Calculate the voltage: ----------------------------------------------
+      !Checking precisions:
+      voltArray(time) = U_scalar - (voltConRtf*arsinh)
     END DO
 
     !DEALLOCATE(c_cur); DEALLOCATE(A_mod); DEALLOCATE(rhs); DEALLOCATE(A);

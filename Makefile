@@ -27,7 +27,8 @@ object=input_output_netcdf.o pde.o
 test.out: $(object)
 		$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
 		-rm -f *.o *.mod
-
+		chmod +x uq_code/sens_ana.sh
+		chmod +x uq_code/up_code.sh
 
 #Checking if object files created 
 ifeq ("$(wildcard $(./pde.o))","")

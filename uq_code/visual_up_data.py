@@ -4,7 +4,8 @@ import sys
 import netCDF4 as nc
 import pandas as pd
 
-num_samps = int(sys.argv[1])
+inp_dat = nc.Dataset(f"data_store_up/SPM_input_ori.nc", "r", format="NETCDF4")
+num_samps = inp_dat['no_samples'][:][0]
 
 dat_mu = nc.Dataset(f"data_store_up/SP_output_0.nc", "r", format="NETCDF4")
 volt_dat_mu = np.array(dat_mu['volt'][:][:,0])
@@ -39,7 +40,7 @@ plt.xlabel('Step Number')
 plt.ylabel('Voltage [V]')
 plt.grid()
 
-if (sys.argv[2] == 'True'):
+if (sys.argv[1] == 'True'):
     std_V_dat = pd.read_csv('./std_V_dat.csv')
 
     std_V = np.array(std_V_dat['std_V'][:])

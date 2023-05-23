@@ -30,12 +30,15 @@ do
 done
 
 mv ./data.csv ./data_store_up/inputs.csv
+mv ./SPM_input_ori.nc ./data_store_up/
+mv ./SP_output_ori.nc ./data_store_up/ 2> /dev/null || true
+mv ./SP_check_ori.chp ./data_store_up/ 2> /dev/null || true
 
 echo "Visualising Results"
-python3 visual_up_data.py $samps $1
+python3 visual_up_data.py $1
 
 mv ./voltage_confidence_up.csv ./data_store_up/
 mv ./std_V_dat.csv ./data_store_up/ 2> /dev/null || true
-mv ./SPM_input_ori.nc ../SPM_input.nc
-mv ./SP_output_ori.nc ../SP_output.nc 2> /dev/null || true
-mv ./SP_check_ori.chp ../SP_check.chp 2> /dev/null || true
+cp ./data_store_up/SPM_input_ori.nc ../SPM_input.nc
+cp ./data_store_up/SP_output_ori.nc ../SP_output.nc 2> /dev/null || true
+cp ./data_store_up/SP_check_ori.chp ../SP_check.chp 2> /dev/null || true

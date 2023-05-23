@@ -24,7 +24,7 @@ import sys
 #mu should be a 9x1 array
 params = ['temp','rad','thick','rr_coef','dif_coef','init_c','max_c','vol_per','iapp']
 
-dat_inp = nc.Dataset("SPM_input_ori.nc", "r", format="NETCDF4")
+dat_inp = nc.Dataset("data_store_sens/SPM_input_ori.nc", "r", format="NETCDF4")
 
 mu = np.array([dat_inp['temp'][:][0],
                dat_inp['rad'][:][0],
@@ -119,7 +119,7 @@ ax.set_xticklabels(params, rotation=45)
 ax.set_ylabel('Absolute scaled sensitivity of $V$')
 ax.set_xlabel('Parameter')
 ax.set_ylim(np.min(V_first_sensitivities)+10**(-9), np.max(V_first_sensitivities)+1)
-ax.set_yscale('log')
+#ax.set_yscale('log')
 ax.grid()
 ax.set_title('First Order Sensitivities Over Time')
 
@@ -128,4 +128,5 @@ time = ax.text(0.1,0.85, "", bbox={'facecolor':'w', 'alpha':0.5, 'pad':5}, trans
 #plot animation
 animate_sensitivities = FuncAnimation(fig, animate,interval=10, frames=range(1,sim_steps), blit=True)
 #animate_sensitivities.save('sensitivities.mp4')
+
 plt.show()

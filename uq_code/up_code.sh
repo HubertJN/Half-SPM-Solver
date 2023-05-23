@@ -4,19 +4,18 @@ set -e
 
 echo "Uncertainty Propagation"
 
-cp ../SPM_input.nc ./SPM_input_ori.nc
-cp ../SP_output.nc ./SP_output_ori.nc
-cp ../SP_check.chp ./SP_check_ori.chp
+mv ../SPM_input.nc ./SPM_input_ori.nc
+mv ../SP_output.nc ./SP_output_ori.nc 2> /dev/null || true
+mv ../SP_check.chp ./SP_check_ori.chp 2> /dev/null || true
 
 echo "Getting input parameters and generating data"
 samps=$(python3 generate_inp_params.py)
-
+echo $samps
 echo "Preparing database store"
 if [ ! -d "data_store_up" ] 
 then
     mkdir data_store_up
 fi
-cp data.csv ./data_store_up/inputs.csv
 
 echo "Generating Input files"
 i=1
@@ -30,9 +29,13 @@ do
     ((i++))
 done
 
+mv ./data.csv ./data_store_up/inputs.csv
+
 echo "Visualising Results"
 python3 visual_up_data.py $samps
 
-cp ./SPM_input_ori.nc ../SPM_input.nc
-cp ./SP_output_ori.nc ../SP_output.nc
-cp ./SP_check_ori.chp ../SP_check.chp
+mv ./voltage_confidence_up.csv ./data_store_up/
+mv ./std_V_dat.csv ./data_store_up/
+mv ./SPM_input_ori.nc ../SPM_input.nc
+mv ./SP_output_ori.nc ../SP_output.nc 2> /dev/null || true
+mv ./SP_check_ori.chp ../SP_check.chp 2> /dev/null || true

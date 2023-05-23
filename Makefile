@@ -102,3 +102,8 @@ sensitive:
 .PHONY: uncertain
 uncertain:
 	(cd ./uq_code && ./up_code.sh)
+
+.PHONY: sens_uncer
+sens_uncer:
+	make -s sensitive
+	make -s uncertain

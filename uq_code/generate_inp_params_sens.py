@@ -3,7 +3,7 @@ import pandas as pd
 import sys
 import netCDF4 as NC
 
-eps = float(sys.argv[1])
+eps = 1e-6 #float(sys.argv[1])
 
 dat_inp = NC.Dataset("SPM_input_ori.nc", "r", format="NETCDF4")
 

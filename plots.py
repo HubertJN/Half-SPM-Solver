@@ -106,7 +106,7 @@ for i, r in enumerate(rs):
 #add circles to collection    
 p = mpl.collections.PatchCollection(patches, cmap=colour)
 p.set_clim([min_colour,max_colour])
-colours = np.array(c[0,:])
+colours = np.array(cinv[0,:])
 p.set_array(colours)
 ax2.add_collection(p)
 
@@ -133,7 +133,7 @@ cbar.ax.yaxis.set_major_formatter(StrMethodFormatter("{x:.10f}"))
 # the concentration data for each timestep is feeded into a colour map
 # the inteval and frames are the same as in subplot 1 and blitting is set to true
 def animate_pcol(t):
-    colours = np.array(c[t,:])
+    colours = np.array(cinv[t,:])
     p.set_array(colours)
     
     return p,

@@ -2,7 +2,8 @@
 
 set -e
 
-echo "Uncertainty Propagation"
+echo "UNCERTAINTY PROPAGATION"
+echo ""
 
 mv ../SPM_input.nc ./SPM_input_ori.nc
 mv ../SP_output.nc ./SP_output_ori.nc 2> /dev/null || true

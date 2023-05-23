@@ -37,6 +37,7 @@ mu = np.array([dat_inp['temp'][:][0],
                dat_inp['iapp'][:][0]])
 
 sim_steps = dat_inp['sim_steps'][:][0]
+dt = dat_inp['dt'][:][0]
 
 #Auxilliary 2D array of variable means, identical columns
 Mu_s = np.tile(mu.reshape((9,1)),(1,sim_steps))
@@ -111,7 +112,7 @@ line, = plt.plot(x, V_first_sensitivities[:, 0], 'o-')
 #definition of animation
 def animate(i):
     line.set_ydata(V_first_sensitivities[:, i])
-    time.set_text(('T=')+str(i))
+    time.set_text(('T=')+str(i*dt)+(' s'))
     return line, time,
 
 ax.set_xticks(x)

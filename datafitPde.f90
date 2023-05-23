@@ -66,6 +66,9 @@ CONTAINS
     REAL(8)                                                    ::  arsinh, div_const !div_const is the stoichiometry.
     INTEGER(4)                                                 :: i, info, time
     INTEGER, DIMENSION(n)                                      :: ipiv
+    
+    print *, 'Flux b.c. rescaled: '
+    print *, 'Diffusion coefficient is: ', D
 
     ALLOCATE(A(n,n))
     ALLOCATE(B(n,n))
@@ -81,7 +84,7 @@ CONTAINS
     num = 3.0d0*volPer/(100.0d0*R)
     modD = D/(R**2)
     
-    fluxParam = iapp/(num*F*L)
+    fluxParam = iapp/(num*F*L*R)
     voltConIal = iapp/(num*L)
     voltConRtf = (2.0d0*Rg*T)/F
 
@@ -119,7 +122,6 @@ CONTAINS
     B(n,n) = 1.0d0 - 2.0d0*ai
 
     rhsConst = 2.0d0*fluxParam*(dt + dt/dr)
-    print *, 'flux: ', rhsConst
     !------------------------------------------------------------------------------------------
     !-------------------------------Run the solver over the time array: -----------------------
     ALLOCATE(c_cur(n))
@@ -160,25 +162,25 @@ CONTAINS
       
       !Assign solution to output matrix
       c_cur = rhs
-      !print *, 'Current concentration: ', c_cur
    
       !--------------------------Calculate stoichiometry: -----------------------------------------------
-      div_const = c_cur(n)/maxCon
-      !------------------------U+ implemented (U- can be implemented later if needed): -----------------
-      U_scalar = -0.8090d0*div_const + 4.4875d0 - 0.0428d0*TANH(18.5138d0*(div_const-0.5542d0)) &
-              -17.7326d0*TANH(15.7890d0*(div_const-0.3117d0)) & 
-              +17.5842d0*TANH(15.9308d0*(div_const-0.3120d0))
-      !----------------------------Calculate arsinh part: ----------------------------------------------
-      arsinh = F*K*SQRT(div_const - (div_const**2))
-      arsinh = voltConIal/arsinh
-      arsinh = ASINH(arsinh)
-      !----------------------------Calculate the voltage: ----------------------------------------------
-      !Checking precisions:
-      !print *, 'U_scalar precision: ', KIND(U_scalar)
-      !print *, 'voltConRtf precision: ', KIND(voltConRtf)
-      !print *, 'arsinh precision: ', KIND(arsinh)
-      !print *, 'voltage precision: ', KIND(voltArray)
-      voltArray(time) = U_scalar - (voltConRtf*arsinh)
+      IF (c_cur(n) < 0.0) THEN
+        PRINT *, 'Concentration at the boundary has reached minimum at iteration time ', time
+        voltArray(time) = voltArray(time-1)
+      ELSE
+        div_const = c_cur(n)/maxCon
+        !------------------------U+ implemented (U- can be implemented later if needed): -----------------
+        U_scalar = -0.8090d0*div_const + 4.4875d0 - 0.0428d0*TANH(18.5138d0*(div_const-0.5542d0)) &
+                -17.7326d0*TANH(15.7890d0*(div_const-0.3117d0)) & 
+                +17.5842d0*TANH(15.9308d0*(div_const-0.3120d0))
+        !----------------------------Calculate arsinh part: ----------------------------------------------
+        arsinh = F*K*SQRT(div_const - (div_const**2))
+        arsinh = voltConIal/arsinh
+        arsinh = ASINH(arsinh)
+        !----------------------------Calculate the voltage: ----------------------------------------------
+        !Checking precisions:
+        voltArray(time) = U_scalar - (voltConRtf*arsinh)
+      END IF
     END DO
 
     !DEALLOCATE(c_cur); DEALLOCATE(A_mod); DEALLOCATE(rhs); DEALLOCATE(A);

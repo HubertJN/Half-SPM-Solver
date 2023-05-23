@@ -55,7 +55,7 @@ CONTAINS
     num = 3.0_REAL64*vol_per/(100.0_REAL64*rad)
     mod_dif = dif_coef/(rad**2)
     
-    flux_param = iapp/(num*farad*thick)
+    flux_param = iapp/(num*farad*thick*rad)
     volt_con_ial = iapp/(num*thick)
     volt_con_rtf = (2.0_REAL64*gas_con*temp)/farad
 

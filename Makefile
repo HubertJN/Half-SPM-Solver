@@ -89,6 +89,7 @@ clean:
 #Generate Doxygen documentation
 .PHONY: docs
 docs:
+	-rm docs.html docs.pdf doxy-warns.log
 	doxygen ./doxygen/Doxyfile
 	(cd ./doxygen/output/latex && make)
 	cp ./doxygen/output/latex/refman.pdf docs.pdf

@@ -96,7 +96,10 @@ module input_output_netcdf
   !! volt_out_id is the variable id of the voltage in the output file
   !> @var int32 conc_out_id
   !!
-  !! conc_out_id is the varialbe id of the concentration in the output ilfe
+  !! conc_out_id is the variable id of the concentration in the output file
+  !> @var int32 conc_check_id
+  !!
+  !! conc_check_id is the variable id of the concentration in the checkpoint file
   !> @var int32 time_check_id
   !!
   !! time_check_id is the id of the final time of the simulation in the checkpoint file

@@ -50,3 +50,42 @@ If the documentation needs to be re-generated, input the following into the comm
 ```
 make docs
 ```
+
+## Uncertainty Quantification
+There are a variety of option to visualise the uncertainties involved with the simulation. The following commands represent the available uncertainty quantification options.
+
+Perform sensitivity analysis and then display the results.
+```
+make sensitive
+```
+
+Display the results from the sensitivity analysis.
+```
+make vis_sens
+```
+
+Perform uncertainty propagation using random latin hypercube sampling and display the results.
+```
+make uncertain
+```
+
+Display the results from random latin hypercube sampling.
+```
+make uncer_vis
+```
+
+Perform sensitivity analysis and perform random latin hypercube sampling. Then calculate uncertainty from the standard deviations and random latin hypercube sampling. Then display results.
+```
+make sens_uncer
+```
+
+Visualise results of calculated uncertainties from the standard deviations and random latin hypercube sampling.
+```
+make vis_sens_uncer
+```
+
+Calculates the uncertainty from the standard deviations and then, assuming random latin hypercube sampling has been performed, displays both.
+```
+make sens_uncer_sep
+```
+

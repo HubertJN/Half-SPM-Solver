@@ -21,11 +21,6 @@ CONTAINS
   !! The function uses the LAPACK library, calling the dgesv function for solving systems
   !! of linear equations to evolve the given state for a certain amount of timesteps.
   !!
-  !! @brief Function to calculate the positive electrode OCV curve, \f$ U(c) \f$.
-  !!
-  !! @details OCV stands for Open Circuit Voltage. Please refer to the paper, 
-  !! Chang-Hui Chen et. al. 2020 J. Electrochem Soc. 167 080534
-  !!
   !! @param[in] n                The number of nodes in the concentration profile.
   !!
   !! @param[in] totalTime        The total number of simulation timesteps (integer).
@@ -82,8 +77,8 @@ CONTAINS
     INTEGER(4)                                                 :: i, info, time
     INTEGER, DIMENSION(n)                                      :: ipiv
     
-    print *, 'Flux b.c. rescaled: '
-    print *, 'Diffusion coefficient is: ', D
+    !print *, 'Flux b.c. rescaled: '
+    !print *, 'Diffusion coefficient is: ', D
 
     ALLOCATE(A(n,n))
     ALLOCATE(B(n,n))

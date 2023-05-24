@@ -51,7 +51,7 @@ If the documentation needs to be re-generated, input the following into the comm
 make docs
 ```
 
-## Uncertainty Quantification
+## Uncertainty quantification
 There are a variety of option to visualise the uncertainties involved with the simulation. The following commands represent the available uncertainty quantification options.
 
 Perform sensitivity analysis and then display the results.

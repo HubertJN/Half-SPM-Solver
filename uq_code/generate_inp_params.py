@@ -1,3 +1,6 @@
+#Script to generate a Latin hypercube sampled dataset for our parameters
+
+#Import relevant packages
 import numpy as np
 import pandas as pd
 import scipy.stats as st
@@ -5,13 +8,20 @@ from scipy.stats import qmc
 import netCDF4 as nc
 import sys
 
+#Read the input file
 inp = nc.Dataset('SPM_input_ori.nc', "r", format='NETCDF4')
+
+#Find out how many samples to produce
 dat_size = inp['no_samples'][:][0]
 
+#Create an array to store the data
 data = np.empty((dat_size, 9))
 imported = np.zeros(9)
 dists = []
 
+#Try to import standard deviations for each of the parameters and create normal distributions
+#If there is no SD then we assume the user doesnt want to sample this parameter and so we set...
+#...all samples to the mean and the SD to 0
 try:
     temp_sd = inp['temp_std'][:][0]
     temp = inp['temp'][:][0]
@@ -111,11 +121,15 @@ except:
     iapp = inp['iapp'][:][0]
     data[:, 8] = iapp
 
+#Here we get the number of variables we want to sample for the Latin hypercube sampler
 num_vars = int(np.sum(imported))
 
+#Generate samples using latin hypercube sampling for the correct number of variables
+#These will all be between 0 and 1
 sampler = qmc.LatinHypercube(d=num_vars)
 sample = sampler.random(n=dat_size)
 
+#Now map the samples to the normal distributions and put them into the data array
 j = 0
 for i in range(9):
     if (imported[i] == 1):
@@ -123,10 +137,12 @@ for i in range(9):
         j += 1
     else:
         continue
-mu = [temp, rad, thick, rr_coef, dif_coef, init_c, max_c, vol_per, iapp]
 
+#Put the mean values into an array and set this to be the first row in the dataset
+mu = [temp, rad, thick, rr_coef, dif_coef, init_c, max_c, vol_per, iapp]
 data[0, :] = mu
 
+#Set up a data frame and save the data to .csv
 dat_fram = {'temp': data[:, 0],
             'rad': data[:, 1],
             'thick': data[:, 2],
@@ -140,10 +156,14 @@ dat_fram = {'temp': data[:, 0],
 df = pd.DataFrame(dat_fram, columns=['temp', 'rad', 'thick', 'rr_coef', 'dif_coef', 'init_c', 'max_c', 'vol_per', 'iapp'])
 df.to_csv('data.csv', index=False)
 
+#If the user has performed sensitivity analysis separately we can import this data...
+#...and using the SDs we can give an approximation of the SD of the voltage
 if (sys.argv[1] == 'True'):
+    #Import the number of time steps and create an array to store the dV_dx data from sensitivity analysis
     sim_steps = inp['sim_steps'][:][0]
     dV_dx = np.empty((9, sim_steps))
-    
+
+    #Import the sensitivity analysis data and save to the array
     sens_dat = pd.read_csv('./data_store_sens/sens_data.csv')
     
     dV_dx[0,:] = sens_dat['temp_dvdx'][:]
@@ -156,9 +176,8 @@ if (sys.argv[1] == 'True'):
     dV_dx[7,:] = sens_dat['vol_per_dvdx'][:]
     dV_dx[8,:] = sens_dat['iapp_dvdx'][:]
 
-    #so now set covariance matrix
-    #here is a placeholder where the standard deviations are 1%
-    std_devs = [temp_sd, rad_sd, thick_sd, rr_coef_sd, dif_coef_sd, init_c_sd, max_c_sd, vol_per_sd, iapp_sd] #0.01*mu
+    #Now create the covariance matrix
+    std_devs = [temp_sd, rad_sd, thick_sd, rr_coef_sd, dif_coef_sd, init_c_sd, max_c_sd, vol_per_sd, iapp_sd]
     Sigma = np.zeros((len(mu),len(mu)))
     for i in range(len(std_devs)):
         Sigma[i,i] = std_devs[i]**2
@@ -172,9 +191,11 @@ if (sys.argv[1] == 'True'):
     std_V = np.zeros(sim_steps)
     for i in range(sim_steps):
         std_V[i] = np.sqrt(var_V[i,i])
+
+    #Save data to data frame and export to .csv
     std_dat_fram = {'std_V': std_V}
     df = pd.DataFrame(std_dat_fram, columns=['std_V'])
     df.to_csv('std_V_dat.csv', index=False)
     
-
+#Print data size to be used by the bash script to know how many times to run the code
 print(dat_size)

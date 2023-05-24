@@ -1,3 +1,6 @@
+#Script to generate a sensitivity analysis plot over time
+
+#Import relevant packages
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,7 +14,7 @@ import sys
 #set variable means x_i
 #run simulation to obtain quantity of interest Q
 #get the mean Q_0
-#give nominated variances to variables - 1%? as var_i, sigma_i = sqrt(var_i)
+#give nominated variances to variables - (1e-4%) as var_i, sigma_i = sqrt(var_i)
 #run simulation (num of variables) times with perturbed variables by h = eps*x_i
 #get first order sensitivity (Q(x_i)-Q_0)/h
 #obtain vector of sensitivities dQ_dx
@@ -20,10 +23,9 @@ import sys
 #Obtain uncertainty estimate via sigma_Q = sqrt(var_Q)
 
 #Set mean of variables here
-#as well as initial dataframe
-#mu should be a 9x1 array
 params = ['temp','rad','thick','rr_coef','dif_coef','init_c','max_c','vol_per','iapp']
 
+#Import the original parameters from the original input file and save to a vector
 dat_inp = nc.Dataset("data_store_sens/SPM_input_ori.nc", "r", format="NETCDF4")
 
 mu = np.array([dat_inp['temp'][:][0],
@@ -42,7 +44,7 @@ dt = dat_inp['dt'][:][0]
 #Auxilliary 2D array of variable means, identical columns
 Mu_s = np.tile(mu.reshape((9,1)),(1,sim_steps))
 
-#Set value of perturbation here
+#Set value of perturbation (eps) here
 #Set h as a matrix for element-wise division, identical columns with elements = h_i
 eps = 1e-6
 h_i = (eps*mu).reshape((9,1))
@@ -50,7 +52,7 @@ h = np.tile(h_i,(1, sim_steps))
 
 #Obtain mean voltage curve V_0 here, each row identical
 #9 rows representing variables
-#1000 columns representing timesteps
+#columns represent time steps
 V_0 = np.zeros((9,sim_steps))
 dat_mu = nc.Dataset("data_store_sens/SP_output_0.nc", "r", format="NETCDF4")
 volt_0 = np.array(dat_mu['volt'][:][:,0])
@@ -58,7 +60,7 @@ V_0 = np.tile(volt_0, (9, 1))
 
 #Obtain perturbed voltages here
 #9 rows representing variables
-#1000 columns representing timesteps
+#Columns representing timesteps
 Vs = np.zeros((9,sim_steps))
 
 for i in range(1, 10, 1):
@@ -69,8 +71,10 @@ for i in range(1, 10, 1):
 dV_dx = np.divide((Vs - V_0),h)
 
 #Compute absolute scaled sensitivity using element-wise multiplication
+#each column i of the matrix represents the sensitivities for each paramter at time t=i
 V_first_sensitivities = np.abs(Mu_s*dV_dx)
 
+#Put the data into a data frame, and save to .csv
 dat_fram = {'temp_sens': V_first_sensitivities[0, :],
             'rad_sens': V_first_sensitivities[1, :],
             'thick_sens': V_first_sensitivities[2, :],
@@ -94,9 +98,7 @@ cols = ['temp_sens', 'rad_sens', 'thick_sens', 'rr_coef_sens', 'dif_coef_sens', 
         'temp_dvdx', 'rad_dvdx', 'thick_dvdx', 'rr_coef_dvdx', 'dif_coef_dvdx', 'init_c_dvdx', 'max_c_dvdx', 'vol_per_dvdx', 'iapp_dvdx']
 df = pd.DataFrame(dat_fram, columns=cols)
 df.to_csv('sens_data.csv', index=False)
-            
 
-#each column i of the matrix represents the sensitivities for each paramter at time t=i
 
 #plot as animation
 fig, ax = plt.subplots(figsize=(10,6))
@@ -115,12 +117,12 @@ def animate(i):
     time.set_text(('T=')+str(i*dt)+(' s'))
     return line, time,
 
+#Design plot
 ax.set_xticks(x)
 ax.set_xticklabels(params, rotation=45)
 ax.set_ylabel('Absolute scaled sensitivity of $V$')
 ax.set_xlabel('Parameter')
 ax.set_ylim(np.min(V_first_sensitivities)+10**(-9), np.max(V_first_sensitivities)+1)
-#ax.set_yscale('log')
 ax.grid()
 ax.set_title('First Order Sensitivities Over Time')
 
@@ -128,6 +130,5 @@ time = ax.text(0.1,0.85, "", bbox={'facecolor':'w', 'alpha':0.5, 'pad':5}, trans
 
 #plot animation
 animate_sensitivities = FuncAnimation(fig, animate,interval=10, frames=range(1,sim_steps), blit=True)
-#animate_sensitivities.save('sensitivities.mp4')
 
 plt.show()

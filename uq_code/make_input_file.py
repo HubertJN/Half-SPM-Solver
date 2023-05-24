@@ -1,11 +1,16 @@
+#This script generates input files to run the pde solver given a data file of input parameters and the sample number
+
+#Import relevant packages
 import netCDF4 as NC
 from netCDF4 import Dataset
 import pandas as pd
 import numpy as np
 import sys
 
+#Get the sample number
 row_num = int(sys.argv[1])
 
+#Open the .csv file with the input parameters and extract the correct row of samples
 dat = pd.read_csv('data.csv')
 
 Temp = dat['temp'][row_num]
@@ -18,6 +23,7 @@ Max_c = dat['max_c'][row_num]
 Vol_per = dat['vol_per'][row_num]
 Iapp = dat['iapp'][row_num]
 
+#Read other unchanged parameters from the original input file
 dat_inp = NC.Dataset("SPM_input_ori.nc", "r", format="NETCDF4")
 Sim_steps = dat_inp['sim_steps'][:][0]
 Dt = dat_inp['dt'][:][0]
@@ -26,7 +32,10 @@ Space_steps = dat_inp['space_steps'][:][0]
 Volt_do = dat_inp['volt_do'][:][0]
 Checkpoint = dat_inp['checkpoint'][:][0]
 
+#Create a netCDF input file and save all the parameters
+#(since this input file is temporary it performs only mandatory commands in constructing the input file)
 rootgrp = Dataset('SPM_input.nc', 'w', format='NETCDF4')
+
 #creating dimensions for vector holding all the input variables
 temp_dim = rootgrp.createDimension('temp_dim', 1)
 rad_dim = rootgrp.createDimension('rad_dim', 1)
@@ -43,6 +52,7 @@ out_steps_dim = rootgrp.createDimension('out_steps_dim', 1)
 space_steps_dim = rootgrp.createDimension('space_steps_dim', 1)
 volt_do_dim = rootgrp.createDimension('volt_do_dim', 1)
 checkpoint_dim = rootgrp.createDimension('checkpoint_dim', 1)
+
 #createing variable 
 temp = rootgrp.createVariable('temp', 'f8', ('temp_dim',))
 rad = rootgrp.createVariable('rad', 'f8', ('rad_dim',))
@@ -59,7 +69,10 @@ out_steps = rootgrp.createVariable('out_steps', 'i4', ('out_steps_dim',))
 space_steps = rootgrp.createVariable('space_steps', 'i4', ('space_steps_dim',))
 volt_do = rootgrp.createVariable('volt_do', 'i4', ('volt_do_dim',))
 checkpoint = rootgrp.createVariable('checkpoint', 'i4', ('checkpoint_dim',))
+
 # writing data to input_parameters variable
+#Purposefully disable checkpoint since it's a feature that could be implemented for sampling...
+#...but currently isnt
 temp[0] = Temp
 rad[0] = Rad
 thick[0] = Thick
@@ -74,6 +87,7 @@ dt[0] = Dt
 out_steps[0] = Out_steps
 space_steps[0] = Space_steps
 volt_do[0] = Volt_do
-checkpoint[0] = 0 #Checkpoint
+checkpoint[0] = 0
+
 #closing the NetCDF file
 rootgrp.close()

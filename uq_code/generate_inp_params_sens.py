@@ -1,10 +1,15 @@
+#Script to generate input parameters to perform sensitivity analysis of voltage with respect to input parameters
+
+#Import relevant packages
 import numpy as np
 import pandas as pd
 import sys
 import netCDF4 as NC
 
-eps = 1e-6 #float(sys.argv[1])
+#Set the perturbation percentage to 1e-4%
+eps = 1e-6
 
+#Import initial parameters
 dat_inp = NC.Dataset("SPM_input_ori.nc", "r", format="NETCDF4")
 
 temp = dat_inp['temp'][:][0]
@@ -17,15 +22,20 @@ max_c = dat_inp['max_c'][:][0]
 vol_per = dat_inp['vol_per'][:][0]
 iapp = dat_inp['iapp'][:][0]
 
-#temp, rad, thick, rr_coef, dif_coef, init_c, max_c, vol_per, iapp
+#Create a row vector of data to store the mean values
 dat = np.array([[temp, rad, thick, rr_coef, dif_coef, init_c, max_c, vol_per, iapp]])
 
+#Create an array to save the inputs with each variable perturbed individually
 a = np.tile(dat, (9, 1))
 
+#Perturb the diagonal elements to create a matrix of input parameters
 for i in range(9):
     a[i,i] = a[i,i] + a[i,i]*eps
+
+#Attach the mean values to the top of the matrix
 A = np.append(dat, a, axis=0)
 
+#Save the data to a data frame and export to .csv
 dat_fram = {'temp': A[:, 0],
             'rad': A[:, 1],
             'thick': A[:, 2],

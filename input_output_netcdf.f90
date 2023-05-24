@@ -30,9 +30,9 @@ module input_output_netcdf
   !! rad is the radius of the particle, \f$ R \f$
   !!
   !! It has units of \f$m\f$
-  !> @var real64 thick, \f$ L \f$
+  !> @var real64 thick
   !!
-  !! thick is the thickness of the electrode
+  !! thick is the thickness of the electrode, \f$ L \f$
   !!
   !! It has units of \f$m\f$
   !> @var real64 rr_coef

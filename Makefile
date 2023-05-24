@@ -71,18 +71,17 @@ exe:
 endif
 
 
-.PHONY: install venv
-install venv: 
+.PHONY: virtual
+virtual: 
 	chmod +x compile.sh
 	chmod +x compile_1.sh
 	sudo apt install python3.10-venv
 	python3 -m venv venv
 
 
-
 #must be done after venv is activated: source venv/bin/activate
-.PHONY: install mods
-install mods:
+.PHONY: mods
+mods:
 	pip install -r requirements.txt 
 
 

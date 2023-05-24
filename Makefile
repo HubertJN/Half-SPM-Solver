@@ -2,18 +2,6 @@
 #MAKEFILE for PX915 Assignment, Group A#
 ########################################
 
-
-install venv: 
-	chmod +x compile.sh
-	chmod +x compile_1.sh
-	sudo apt install python3.10-venv
-	python3 -m venv venv
-
-
-
-#must be done after venv is activated: source venv/bin/activate
-install mods:
-	pip install -r requirements.txt 
 	
 #Fortran compiler & flags 
 #Uncomment -O3 to add compiler optimisation 
@@ -81,6 +69,21 @@ exe:
 		@OMP_NUM_THREADS=$(num_threads) ./test.out 
 		@echo "Running Parallel code. Number of threads = " $(num_threads)
 endif
+
+
+.PHONY: install venv
+install venv: 
+	chmod +x compile.sh
+	chmod +x compile_1.sh
+	sudo apt install python3.10-venv
+	python3 -m venv venv
+
+
+
+#must be done after venv is activated: source venv/bin/activate
+.PHONY: install mods
+install mods:
+	pip install -r requirements.txt 
 
 
 #Generate visualisation

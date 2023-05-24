@@ -7,6 +7,10 @@ set -e
 echo "SENSITIVITY ANALYSIS"
 echo ""
 
+#if [ -z ${1+x} ]
+if [ $1 == 'False' ]
+then
+    
 #If the data base directory doesnt exist, then create it
 echo "Preparing database store"
 if [ ! -d "data_store_sens" ] 
@@ -59,6 +63,8 @@ mv ./sens_data.csv ./data_store_sens/
 cp ./data_store_sens/SPM_input_ori.nc ../SPM_input.nc
 cp ./data_store_sens/SP_output_ori.nc ../SP_output.nc 2> /dev/null || true
 cp ./data_store_sens/SP_check_ori.chp ../SP_check.chp 2> /dev/null || true
+
+fi
 
 if [ $1 == 'True' ]
 then

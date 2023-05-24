@@ -54,7 +54,7 @@ plt.grid()
 #If the user has performed the sensitivity analysis, and calculated uncertainty using dV_dx (see generate_inp_params.py)...
 #...They can plot this data on top of the other uncertainty propagation data 
 if (sys.argv[1] == 'True'):
-    std_V_dat = pd.read_csv('./std_V_dat.csv')
+    std_V_dat = pd.read_csv('./data_store_sens/std_V_dat.csv')
 
     std_V = np.array(std_V_dat['std_V'][:])
     low_b = volt_dat_mu-(2*std_V)

@@ -12,8 +12,20 @@ PROGRAM main
   IMPLICIT NONE
   
   !Overload function for voltage calculation
+  !> @brief Voltage calculator interface
+  !!
+  !! @details Interface that wraps both the scalar and
+  !! array voltage caclulation subroutines from the module pde_solver
   INTERFACE volt_calc
+    !> @brief Scalar voltage calculator
+    !!
+    !! @details Calculates scalar voltage when given 
+    !! a scalar input of concentration.
     MODULE PROCEDURE volt_scalar
+    !> @brief Array voltage calculator
+    !!
+    !! @details Calculates array of voltages when given 
+    !! an array input of concentration.
     MODULE PROCEDURE volt_array
   END INTERFACE volt_calc
   

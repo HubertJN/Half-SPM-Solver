@@ -204,7 +204,7 @@ CONTAINS
   END FUNCTION U_scalar
   
   
-  !> @brief Array version fo the U_scalar function.
+  !> @brief Array version for the U_scalar function.
   !!
   !! @param x       Array version of the stoichiometry
 

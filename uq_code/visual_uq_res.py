@@ -123,7 +123,7 @@ ax.set_xticks(x)
 ax.set_xticklabels(params, rotation=45)
 ax.set_ylabel('Absolute scaled sensitivity of $V$')
 ax.set_xlabel('Parameter')
-ax.set_ylim(np.min(V_first_sensitivities)+10**(-9), np.max(V_first_sensitivities)+1)
+ax.set_ylim(np.min(V_first_sensitivities)+10**(-9)-0.1, np.max(V_first_sensitivities)+1)
 ax.grid()
 ax.set_title('First Order Sensitivities Over Time')
 

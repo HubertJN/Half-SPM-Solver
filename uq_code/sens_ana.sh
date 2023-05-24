@@ -59,3 +59,13 @@ mv ./sens_data.csv ./data_store_sens/
 cp ./data_store_sens/SPM_input_ori.nc ../SPM_input.nc
 cp ./data_store_sens/SP_output_ori.nc ../SP_output.nc 2> /dev/null || true
 cp ./data_store_sens/SP_check_ori.chp ../SP_check.chp 2> /dev/null || true
+
+if [ $1 == 'True' ]
+then
+    cp ./data_store_sens/SPM_input_ori.nc ./
+    python3 generate_inp_params.py True
+    rm data.csv
+    mv ./std_V_dat.csv ./data_store_sens/
+    gnome-terminal --tab -- python3 vis_uncer_sens.py
+    rm SPM_input_ori.nc
+fi

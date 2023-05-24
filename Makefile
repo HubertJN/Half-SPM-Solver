@@ -98,7 +98,7 @@ docs:
 
 .PHONY: sensitive
 sensitive:
-	(cd ./uq_code && ./sens_ana.sh)
+	(cd ./uq_code && ./sens_ana.sh False)
 
 .PHONY: vis_sens
 vis_sens:
@@ -114,7 +114,7 @@ vis_uncer:
 
 .PHONY: sens_uncer
 sens_uncer:
-	(cd ./uq_code && ./sens_ana.sh)
+	(cd ./uq_code && ./sens_ana.sh False)
 	(cd ./uq_code && ./up_code.sh True)
 
 .PHONY: vis_sens_uncer
@@ -126,3 +126,11 @@ sens_uncer_sep:
 	(cp ./uq_code/data_store_up/SPM_input_ori.nc ./uq_code/)
 	(cd ./uq_code && python3 generate_inp_params.py True)
 	(cd ./uq_code ; gnome-terminal --tab -- python3 visual_up_data.py True)
+
+.PHONY: uncer_from_sens
+uncer_from_sens:
+	(cd ./uq_code && ./sens_ana.sh True)
+
+.PHONY: vis_uncer_from_sens
+vis_uncer_from_sens:
+	(cd ./uq_code ; gnome-terminal --tab -- python3 vis_uncer_sens.py)

@@ -12,7 +12,13 @@ import sys
 inp = nc.Dataset('SPM_input_ori.nc', "r", format='NETCDF4')
 
 #Find out how many samples to produce
-dat_size = inp['no_samples'][:][0]
+try:
+    dat_size = inp['no_samples'][:][0]
+except:
+    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    print('YOU NEED TO MODIFY THE INPUT FILE WITH UNCERTAINTY PARAMETERS')
+    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    dat_size = inp['no_samples'][:][0]
 
 #Create an array to store the data
 data = np.empty((dat_size, 9))

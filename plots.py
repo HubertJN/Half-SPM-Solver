@@ -39,7 +39,7 @@ x_axis = np.linspace(0, rad, r_steps, endpoint=True)
 # the main parts of the  animation code were taken from:
 # https://brushingupscience.com/2016/06/21/matplotlib-animations-the-easy-way/
 
-intervaltime = 0.5   #time between each animations step in ms
+intervaltime = 10   #time between each animations step in ms
 
 # plotting the first graph which is a 2D line of lithium ion concentration
 # with respect to the particle radius
@@ -173,6 +173,7 @@ if do_volt == 1:
 
 plt.draw()
 plt.tight_layout()
-plt.show()
 
 dat.close()
+
+plt.show()

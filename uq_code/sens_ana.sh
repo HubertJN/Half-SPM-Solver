@@ -47,8 +47,12 @@ mv ./SP_check_ori.chp ./data_store_sens/ 2> /dev/null || true
 
 #Call the visualisation script
 echo "Visualising Results"
-python3 visual_uq_res.py
+gnome-terminal --tab -- python3 visual_uq_res.py
 
+until [ -f ./sens_data.csv ]
+do
+    sleep 2
+done
 #Move the generated data into the data store file...
 #...and move the original data files back into the main directory
 mv ./sens_data.csv ./data_store_sens/

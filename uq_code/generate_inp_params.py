@@ -196,6 +196,7 @@ if (sys.argv[1] == 'True'):
     std_dat_fram = {'std_V': std_V}
     df = pd.DataFrame(std_dat_fram, columns=['std_V'])
     df.to_csv('std_V_dat.csv', index=False)
-    
+
+inp.close()
 #Print data size to be used by the bash script to know how many times to run the code
 print(dat_size)

@@ -66,6 +66,7 @@ Vs = np.zeros((9,sim_steps))
 for i in range(1, 10, 1):
     dat = nc.Dataset(f"data_store_sens/SP_output_{i}.nc", "r", format="NETCDF4")
     Vs[i-1, :] = np.array(dat['volt'][:][:,0])
+    dat.close()
 
 #Compute dV/dx as a function of time
 dV_dx = np.divide((Vs - V_0),h)
@@ -130,5 +131,8 @@ time = ax.text(0.1,0.85, "", bbox={'facecolor':'w', 'alpha':0.5, 'pad':5}, trans
 
 #plot animation
 animate_sensitivities = FuncAnimation(fig, animate,interval=10, frames=range(1,sim_steps), blit=True)
+
+dat_inp.close()
+dat_mu.close()
 
 plt.show()

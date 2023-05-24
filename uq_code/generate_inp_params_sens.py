@@ -48,3 +48,5 @@ dat_fram = {'temp': A[:, 0],
             }
 df = pd.DataFrame(dat_fram, columns=['temp', 'rad', 'thick', 'rr_coef', 'dif_coef', 'init_c', 'max_c', 'vol_per', 'iapp'])
 df.to_csv('data.csv', index=False)
+
+dat_inp.close()

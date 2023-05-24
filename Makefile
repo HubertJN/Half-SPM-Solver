@@ -73,7 +73,7 @@ endif
 #Generate visualisation
 .PHONY: visual
 visual: 
-	python3 plots.py	
+	gnome-terminal --tab -- python3 plots.py	
 
 
 #Purge build and output files, give no errors if they did not previously exist
@@ -102,7 +102,7 @@ sensitive:
 
 .PHONY: vis_sens
 vis_sens:
-	(cd ./uq_code && python3 visual_uq_res.py)
+	(cd ./uq_code ; gnome-terminal --tab -- python3 visual_uq_res.py)
 
 .PHONY: uncertain
 uncertain:
@@ -110,7 +110,7 @@ uncertain:
 
 .PHONY: vis_uncer
 vis_uncer:
-	(cd ./uq_code && python3 visual_up_data.py False)
+	(cd ./uq_code ; gnome-terminal --tab -- python3 visual_up_data.py False)
 
 .PHONY: sens_uncer
 sens_uncer:
@@ -119,10 +119,10 @@ sens_uncer:
 
 .PHONY: vis_sens_uncer
 vis_sens_uncer:
-	(cd ./uq_code && python3 visual_up_data.py True)
+	(cd ./uq_code ; gnome-terminal --tab -- python3 visual_up_data.py True)
 
 .PHONY: sens_uncer_sep
 sens_uncer_sep:
 	(cp ./uq_code/data_store_up/SPM_input_ori.nc ./uq_code/)
 	(cd ./uq_code && python3 generate_inp_params.py True)
-	(cd ./uq_code && python3 visual_up_data.py True)
+	(cd ./uq_code ; gnome-terminal --tab -- python3 visual_up_data.py True)

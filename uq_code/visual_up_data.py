@@ -27,6 +27,7 @@ volt_array = np.empty((t_steps, (num_samps-1)))
 for i in range(1, num_samps, 1):
     dat = nc.Dataset(f"data_store_up/SP_output_{i}.nc", "r", format="NETCDF4")
     volt_array[:, (i-1)] = np.array(dat['volt'][:][:,0])
+    dat.close()
 
 #Calculate the 2.5th and 97.5th percentile of the voltage at each time step to get a 95% confidence
 ana = np.percentile(volt_array, [2.5, 97.5], axis=1)
@@ -64,5 +65,9 @@ if (sys.argv[1] == 'True'):
 
 #Display the plot
 plt.legend()
+
+inp_dat.close()
+dat_mu.close()
+
 plt.show()
 

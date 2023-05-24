@@ -50,7 +50,12 @@ mv ./SP_check_ori.chp ./data_store_up/ 2> /dev/null || true
 
 #Call the visualisation code, using $1 to know if sensitivity analysis data is present
 echo "Visualising Results"
-python3 visual_up_data.py $1
+gnome-terminal --tab -- python3 visual_up_data.py $1
+
+until [ -f ./voltage_confidence_up.csv ]
+do
+    sleep 2
+done
 
 #Move the visualisation data and sensitivity analysis uncertainty data into the data store directory...
 #...and move the original input input, output, and checkpoint file back to the main directory

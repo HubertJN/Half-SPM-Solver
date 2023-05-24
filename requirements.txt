@@ -4,7 +4,6 @@ pandas
 matplotlib
 scipy
 python-math
-ipywidgets
 netCDF4 
 
 

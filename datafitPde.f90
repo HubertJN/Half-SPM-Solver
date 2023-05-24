@@ -21,11 +21,6 @@ CONTAINS
   !! The function uses the LAPACK library, calling the dgesv function for solving systems
   !! of linear equations to evolve the given state by one timestep.
   !!
-  !! @brief Function to calculate the positive electrode OCV curve, \f$ U(c) \f$.
-  !!
-  !! @details OCV stands for Open Circuit Voltage. Please refer to the paper, 
-  !! Chang-Hui Chen et. al. 2020 J. Electrochem Soc. 167 080534
-  !!
   !! @param[in] x                The stoichiometry, as an array
   !!
   !! @param[in] A             The left hand side coefficient matrix of the system 

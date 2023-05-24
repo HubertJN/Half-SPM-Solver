@@ -15,10 +15,7 @@ inp = nc.Dataset('SPM_input_ori.nc', "r", format='NETCDF4')
 try:
     dat_size = inp['no_samples'][:][0]
 except:
-    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    print('YOU NEED TO MODIFY THE INPUT FILE WITH UNCERTAINTY PARAMETERS')
-    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    dat_size = inp['no_samples'][:][0]
+    sys.exit('!!!YOU NEED TO MODIFY THE INPUT FILE WITH UNCERTAINTY PARAMETERS!!!')
 
 #Create an array to store the data
 data = np.empty((dat_size, 9))

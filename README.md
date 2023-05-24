@@ -51,7 +51,7 @@ If the documentation needs to be re-generated, input the following into the comm
 make docs
 ```
 
-## Uncertainty Quantification
+## Uncertainty quantification
 There are a variety of option to visualise the uncertainties involved with the simulation. The following commands represent the available uncertainty quantification options.
 
 Perform sensitivity analysis and then display the results.
@@ -97,5 +97,5 @@ You can tell if the virtual environment is activated if you can see '(venv)' wri
 ```
 jupyter notebook
 ```
-Once Jupyter is launched, find the notebook 'DataFit_int.ipynb' in the Jupyter file browser and open it. You can then run the cells accordingly to preform the optimisation on the diffusio
+Once Jupyter is launched, find the notebook 'DataFit_int.ipynb' in the Jupyter file browser and open it. You can then run the cells accordingly to preform the optimisation on the diffusion coefficient.
 

@@ -102,7 +102,7 @@ Calculates the uncertainty from the standard deviations and then, assuming rando
 make sens_uncer_sep
 ```
 ## How to Run the Data Fitting
-Download the /venv/ directory, which contains all the necessary python libraries which the data fitting notebook, 'DataFit_int.ipynb', requires. The /venv/ directory is a virtual environment, and launching Jupyter notebook inside this virtual environment will allow Jupyter to use the required libraries without the user needing to install them. To activate the virtual environment, go to the directory where /venv/ is stored. This directory should also contain the solver used for data fitting, 'datafitPde.f90', and the notebook that runs the datafitting, 'DataFit_int.ipynb'. Once the /venv/ directory and the aforementioned programs are stored in the same location, the virtual environment needs to be launched. To launch the virtual environment, move to the location where it is stored in a terminal and type the following command:
+Ensure that the /venv/ directory is downloaded, which contains all the necessary python libraries which the data fitting notebook, 'DataFit_int.ipynb', requires. The /venv/ directory is a virtual environment, and launching Jupyter notebook inside this virtual environment will allow Jupyter to use the required libraries without the user needing to install them. To activate the virtual environment, go to the directory where /venv/ is stored. This directory should also contain the solver used for data fitting, 'datafitPde.f90', and the notebook that runs the datafitting, 'DataFit_int.ipynb'. Once the /venv/ directory and the aforementioned programs are stored in the same location, the virtual environment needs to be launched. To launch the virtual environment, move to the location where it is stored in a terminal and type the following command:
 <br>
 ```
 source /venv/bin/activate
@@ -113,4 +113,4 @@ You can tell if the virtual environment is activated if you can see '(venv)' wri
 jupyter notebook
 ```
 Once Jupyter is launched, find the notebook 'DataFit_int.ipynb' in the Jupyter file browser and open it. You can then run the cells accordingly to preform the optimisation on the diffusion coefficient.
-
+To see the result without running the notebook, open the png file, 'fitted_diff_coeffs.png'.

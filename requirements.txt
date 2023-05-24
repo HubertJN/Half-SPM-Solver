@@ -1,0 +1,7 @@
+numpy
+notebook
+pandas
+matplotlib
+scipy
+python-math
+

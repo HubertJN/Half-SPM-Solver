@@ -48,24 +48,27 @@ CONTAINS
   !! This is a combination of parameters given by: \f$ \frac{2 R_g T}{F} \f$
   !> @var real64 mod_dif
   !!
-  !! The rescaled diffusion coefficient given by: \f$ \frac{D}{R^2} \f$  
+  !! The rescaled diffusion coefficient given by: \f$ \frac{D}{R^2} \f$ 
+  !! ipiv - pivotal arrays used by dgesv (link to dgesv lapack) 
   FUNCTION crank_nicholson(n, totalTime, D, R, volPer, iapp, F, L, Rg, T, K, maxCon, c0, dt) RESULT(voltArray)
 
-    INTEGER(4), INTENT(IN)                                      :: n, totalTime
+    INTEGER(4), INTENT(IN)                                     :: n, totalTime
     REAL(8), DIMENSION(:,:), ALLOCATABLE                       :: A, B
     REAL(8),   DIMENSION(:,:), ALLOCATABLE                     :: A_mod
-    !REAL(8), DIMENSION(:), INTENT(IN)                          :: timeArr
     REAL(8), DIMENSION(n), INTENT(IN)                          :: c0
     REAL(8), DIMENSION(:),   ALLOCATABLE                       :: c_cur, rhs
     REAL(8)                                                    :: U_scalar
-    REAL(8), DIMENSION(totalTime)                :: voltArray
+    REAL(8), DIMENSION(totalTime)                              :: voltArray
     
     REAL(8), INTENT(IN)                                        :: D, R, volPer, iapp, F, L, Rg, T, K, maxCon, dt
     REAL(8)                                                    :: ai, ri, num, fluxParam, dr, &
                                                                        rhsConst, voltConIal, voltConRtf, modD 
-    REAL(8)                                                    :: arsinh, div_const !div_const is the stoichiometry.
-    INTEGER(4)                                                  :: i, info, totalSim, time
-    INTEGER, DIMENSION(n)                                           :: ipiv
+    REAL(8)                                                    ::  arsinh, div_const !div_const is the stoichiometry.
+    INTEGER(4)                                                 :: i, info, time
+    INTEGER, DIMENSION(n)                                      :: ipiv
+    
+    print *, 'Flux b.c. rescaled: '
+    print *, 'Diffusion coefficient is: ', D
 
     ALLOCATE(A(n,n))
     ALLOCATE(B(n,n))
@@ -75,16 +78,13 @@ CONTAINS
       STOP
     END IF
     
-    !----------------------Setup matrices for the system of linear equations: ---------------------
-  !  totalSim = SIZE(timeArr)
-
-   ! dt = timeArr(2) - timeArr(1)
+   !----------------------Setup matrices for the system of linear equations: ---------------------
     dr = 1.0d0/(REAL(n-1, 8))
 
     num = 3.0d0*volPer/(100.0d0*R)
     modD = D/(R**2)
     
-    fluxParam = iapp/(num*F*L)
+    fluxParam = iapp/(num*F*L*R)
     voltConIal = iapp/(num*L)
     voltConRtf = (2.0d0*Rg*T)/F
 
@@ -125,24 +125,18 @@ CONTAINS
     !------------------------------------------------------------------------------------------
     !-------------------------------Run the solver over the time array: -----------------------
     ALLOCATE(c_cur(n))
+    ALLOCATE(rhs(n))
+    c_cur = 0.0d0
+    rhs = 0.0d0
 
-    DO time = 1, totalSim
-    
-      IF(ALLOCATED(rhs)) THEN
-        DEALLOCATE(rhs)
-      END IF
-     
-      
+    DO time = 1, totalTime
 
       IF (ALLOCATED(A_mod)) THEN
         DEALLOCATE(A_mod)
       END IF
       
-      ALLOCATE(rhs(n))
       ALLOCATE(A_mod(n,n))
       
-      rhs = 0.0d0
-      c_cur = 0.0d0
       
       A_mod = A
       !Use initial concentration at first timestep, otherwise use previour timestep concentration. 
@@ -170,6 +164,10 @@ CONTAINS
       c_cur = rhs
    
       !--------------------------Calculate stoichiometry: -----------------------------------------------
+     ! IF (c_cur(n) < 0.0) THEN
+      !  PRINT *, 'Concentration at the boundary has reached minimum at iteration time ', time
+     !   voltArray(time) = voltArray(time-1)
+     ! ELSE
       div_const = c_cur(n)/maxCon
       !------------------------U+ implemented (U- can be implemented later if needed): -----------------
       U_scalar = -0.8090d0*div_const + 4.4875d0 - 0.0428d0*TANH(18.5138d0*(div_const-0.5542d0)) &
@@ -180,7 +178,9 @@ CONTAINS
       arsinh = voltConIal/arsinh
       arsinh = ASINH(arsinh)
       !----------------------------Calculate the voltage: ----------------------------------------------
+      !Checking precisions:
       voltArray(time) = U_scalar - (voltConRtf*arsinh)
+     ! END IF
     END DO
 
     !DEALLOCATE(c_cur); DEALLOCATE(A_mod); DEALLOCATE(rhs); DEALLOCATE(A);

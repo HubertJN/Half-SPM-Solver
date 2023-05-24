@@ -71,20 +71,6 @@ exe:
 endif
 
 
-.PHONY: virtual
-virtual: 
-	chmod +x compile.sh
-	chmod +x compile_1.sh
-	sudo apt install python3.10-venv
-	python3 -m venv venv
-
-
-#must be done after venv is activated: source venv/bin/activate
-.PHONY: mods
-mods:
-	pip install -r requirements.txt 
-
-
 #Generate visualisation
 .PHONY: visual
 visual: 
@@ -149,3 +135,17 @@ uncer_from_sens:
 .PHONY: vis_uncer_from_sens
 vis_uncer_from_sens:
 	(cd ./uq_code ; gnome-terminal --tab -- python3 vis_uncer_sens.py)
+	
+	
+.PHONY: virtual
+virtual: 
+	chmod +x compile.sh
+	chmod +x compile_1.sh
+	sudo apt install python3.10-venv
+	python3 -m venv venv
+
+
+#must be done after venv is activated: source venv/bin/activate
+.PHONY: mods
+mods:
+	pip install -r requirements.txt 

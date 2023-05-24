@@ -389,7 +389,7 @@ contains
   !! with length 'var_len' and data type 'var_typ' (in this case f90_int or f90_double)
   !! in a NetCDF file with id 'file_id'.
   !!
-  !! You can optionally prescribe units to the variable'units', 
+  !! You can optionally prescribe units to the variable 'units', 
   !! and if you want to save the variable id you can input a variable to store it 'var_id_out'.
   !!
   !! If the file is NOT in definition mode, so already exists,

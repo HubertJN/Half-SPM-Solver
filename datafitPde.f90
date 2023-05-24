@@ -48,8 +48,10 @@ CONTAINS
   !! This is a combination of parameters given by: \f$ \frac{2 R_g T}{F} \f$
   !> @var real64 mod_dif
   !!
-  !! The rescaled diffusion coefficient given by: \f$ \frac{D}{R^2} \f$ 
-  !! ipiv - pivotal arrays used by dgesv (link to dgesv lapack) 
+  !! The rescaled diffusion coefficient given by: \f$ \frac{D}{R^2} \f$.
+  !> @var ipiv
+  !!
+  !! pivotal arrays used by dgesv, https://netlib.org/lapack/explore-html/d7/d3b/group__double_g_esolve_ga5ee879032a8365897c3ba91e3dc8d512.html.
   FUNCTION crank_nicholson(n, totalTime, D, R, volPer, iapp, F, L, Rg, T, K, maxCon, c0, dt) RESULT(voltArray)
 
     INTEGER(4), INTENT(IN)                                     :: n, totalTime

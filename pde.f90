@@ -12,16 +12,16 @@ MODULE pde_solver
   IMPLICIT NONE
   !> @var real64 rhs_const
   !!
-  !! Rescaled source at the flux boundary given by: \f$ \left(dt + \frac{dt}{dr} \right) \frac{200 R i_{app}}{3 \epsilon_{actk} F L} \f$
+  !! Rescaled source at the flux boundary given by: \f$ \left(dt + \frac{dt}{dr} \right) \frac{200 R i_{app}}{3 \epsilon_{actk} F L} \f$.
   !> @var real64 volt_con_ial
   !!
-  !! This is a combination of parameters given by: \f$ \frac{100 i_{app} R}{3 \epsilon_{actk} L} \f$
+  !! This is a combination of parameters given by: \f$ \frac{100 i_{app} R}{3 \epsilon_{actk} L} \f$.
   !> @var real64 volt_con_rtf
   !!
-  !! This is a combination of parameters given by: \f$ \frac{2 R_g T}{F} \f$
+  !! This is a combination of parameters given by: \f$ \frac{2 R_g T}{F} \f$.
   !> @var real64 mod_dif
   !!
-  !! The rescaled diffusion coefficient given by: \f$ \frac{D}{R^2} \f$  
+  !! The rescaled diffusion coefficient given by: \f$ \frac{D}{R^2} \f$.
   real(kind=real64) :: rhs_const, volt_con_ial, volt_con_rtf, mod_dif
   
 CONTAINS
@@ -111,7 +111,7 @@ CONTAINS
   !! of equations (please refer to formulation section
   !! for specific details on the matrix elements)
   !! @param[in] c_cur         The current time concentration array inputed into the
-  !! Crank-Nicholson solver. 
+  !! Crank-Nicholson solver
   FUNCTION crank_nicholson(A, B, c_cur)
   
     
@@ -183,7 +183,7 @@ CONTAINS
   !> @brief Function to calculate the positive electrode OCV curve, \f$ U(c) \f$.
   !!
   !! @details OCV stands for Open Circuit Voltage. Please refer to the paper, 
-  !! Chang-Hui Chen et. al. 2020 J. Electrochem Soc. 167 080534
+  !! Chang-Hui Chen et. al. 2020 J. Electrochem Soc. 167 080534, https:/doi.org/10.1149/1945-7111/ab9050.
   !!
   !! @param[in] x                The stoichiometry
 
@@ -206,7 +206,7 @@ CONTAINS
   
   !> @brief Array version fo the U_scalar function.
   !!
-  !! @param x       Array version of the stoichiometry.
+  !! @param x       Array version of the stoichiometry
 
   FUNCTION U_arr(x)
     
@@ -235,7 +235,7 @@ CONTAINS
   !> @brief Scalar voltage calculator
   !!
   !! @details Calculates scalar voltage when given 
-  !! a scalar input of concentration
+  !! a scalar input of concentration.
   !! 
   !! @param[in] cin           input concentration
   

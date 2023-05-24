@@ -97,5 +97,5 @@ You can tell if the virtual environment is activated if you can see '(venv)' wri
 ```
 jupyter notebook
 ```
-Once Jupyter is launched, find the notebook 'DataFit_int.ipynb' in the Jupyter file browser and open it. You can then run the cells accordingly to preform the optimisation on the diffusio
+Once Jupyter is launched, find the notebook 'DataFit_int.ipynb' in the Jupyter file browser and open it. You can then run the cells accordingly to preform the optimisation on the diffusion coefficient.
 

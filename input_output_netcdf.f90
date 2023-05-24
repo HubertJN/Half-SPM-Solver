@@ -11,113 +11,113 @@ module input_output_netcdf
   implicit none
   !> @var kind DP
   !!
-  !! DP is used to define a number as double precision
+  !! DP is used to define a number as double precision.
   !> @var real64 farad
-  !! farad is the Faraday constant, \f$ F \f$
+  !! farad is the Faraday constant, \f$ F \f$.
   !!
-  !! It has units of \f$C mol^{-1}\f$
+  !! It has units of \f$C mol^{-1}\f$.
   !> @var real64 gas_con
-  !! gas_con is the ideal gas constant, \f$ R_g \f$
+  !! gas_con is the ideal gas constant, \f$ R_g \f$.
   !!
-  !! It has units of \f$J K^{-1} mol^{-1}\f$
+  !! It has units of \f$J K^{-1} mol^{-1}\f$.
   !> @var real64 temp
   !!
-  !! temp is the temperature of the simulation, \f$ T \f$
+  !! temp is the temperature of the simulation, \f$ T \f$.
   !!
-  !! It has units of \f$K\f$
+  !! It has units of \f$K\f$.
   !> @var real64 rad
   !!
-  !! rad is the radius of the particle, \f$ R \f$
+  !! rad is the radius of the particle, \f$ R \f$.
   !!
-  !! It has units of \f$m\f$
+  !! It has units of \f$m\f$.
   !> @var real64 thick
   !!
-  !! thick is the thickness of the electrode, \f$ L \f$
+  !! thick is the thickness of the electrode, \f$ L \f$.
   !!
-  !! It has units of \f$m\f$
+  !! It has units of \f$m\f$.
   !> @var real64 rr_coef
   !!
-  !! rr_coef is the reaction rate coefficient, \f$ K \f$
+  !! rr_coef is the reaction rate coefficient, \f$ K \f$.
   !!
-  !! It has units of \f$A m^2 \left(m^3 mol^{-1} \right)^{1.5}\f$
+  !! It has units of \f$A m^2 \left(m^3 mol^{-1} \right)^{1.5}\f$.
   !> @var real64 dif_coef
   !!
-  !! dif_coef is the diffusion coefficient, \f$ D \f$
+  !! dif_coef is the diffusion coefficient, \f$ D \f$.
   !!
-  !! It has units of \f$m^2 s^{-1}\f$
+  !! It has units of \f$m^2 s^{-1}\f$.
   !> @var real64 iapp
   !!
-  !! iapp is the applied current density as a function of time, \f$ i_{app} \f$
+  !! iapp is the applied current density as a function of time, \f$ i_{app} \f$.
   !!
-  !! It has units of \f$A m^{-2}\f$
+  !! It has units of \f$A m^{-2}\f$.
   !> @var real64 init_c
   !!
-  !! init_c is the initial concentration, \f$ c_0 \f$
+  !! init_c is the initial concentration, \f$ c_0 \f$.
   !!
-  !! It has units of \f$mol m^{-3}\f$
+  !! It has units of \f$mol m^{-3}\f$.
   !> @var real64 max_c
   !!
-  !! max_c is the maximum concentration of the simulation, \f$ c_{max} \f$
+  !! max_c is the maximum concentration of the simulation, \f$ c_{max} \f$.
   !!
-  !! It has units of \f$mol m^{-3}\f$
+  !! It has units of \f$mol m^{-3}\f$.
   !> @var real64 dt
   !!
-  !! dt is the time step
+  !! dt is the time step.
   !!
-  !! It has units of \f$s\f$
+  !! It has units of \f$s\f$.
   !> @var real64 vol_per
   !!
-  !! vol_per is the active material volume fraction, \f$ \epsilon_{actk} \f$
+  !! vol_per is the active material volume fraction, \f$ \epsilon_{actk} \f$.
   !> @var real64 final_time
   !!
-  !! final_time is the time of the final time step
+  !! final_time is the time of the final time step.
   !!
-  !! It has units of \f$s\f$  
+  !! It has units of \f$s\f$  .
   !> @var int32 sim_steps
   !!
-  !! sim_steps is the number of simulation steps
+  !! sim_steps is the number of simulation steps.
   !> @var int32 out_steps
   !!
-  !! out_steps is the number of steps before writing to output file
+  !! out_steps is the number of steps before writing to output file.
   !> @var int32 space_steps
   !!
-  !! space_steps is the resolution of the radius
+  !! space_steps is the resolution of the radius.
   !> @var int32 tot_steps
   !!
-  !! tot_steps is the total number of simulation steps  
+  !! tot_steps is the total number of simulation steps.
   !> @var int32 output_id
   !!
-  !! output_id is the id of the output file
+  !! output_id is the id of the output file.
   !> @var int32 check_id
   !!
-  !! check_id is the id of the checkpoint file  
+  !! check_id is the id of the checkpoint file.
   !> @var int32 volt_out_id
   !!
-  !! volt_out_id is the variable id of the voltage in the output file
+  !! volt_out_id is the variable id of the voltage in the output file.
   !> @var int32 conc_out_id
   !!
-  !! conc_out_id is the variable id of the concentration in the output file
+  !! conc_out_id is the variable id of the concentration in the output file.
   !> @var int32 conc_check_id
   !!
-  !! conc_check_id is the variable id of the concentration in the checkpoint file
+  !! conc_check_id is the variable id of the concentration in the checkpoint file.
   !> @var int32 time_check_id
   !!
-  !! time_check_id is the id of the final time of the simulation in the checkpoint file
+  !! time_check_id is the id of the final time of the simulation in the checkpoint file.
   !> @var int32 ts_check_id
   !!
-  !! ts_check_id is the id of the final time step of the simulation in the checkpoint file 
+  !! ts_check_id is the id of the final time step of the simulation in the checkpoint file.
   !> @var logical volt_do
   !!
-  !! volt_do is the logical value which determines whether to calculate voltage to the outputfile
+  !! volt_do is the logical value which determines whether to calculate voltage to the output file.
   !> @var logical checkpoint
   !!
-  !! checkpoint is the logical value which determines whether to restart simulation from the checkpoint  
+  !! checkpoint is the logical value which determines whether to restart simulation from the checkpoint.
   !> @var int32 volt_do_int
   !!
-  !! volt_do_int is the binary representation of the volt_do variable
+  !! volt_do_int is the binary representation of the volt_do variable.
   !> @var int32 checkpoint_int
   !!
-  !! checkpoint_int is the binary representation of the checkpoint_int
+  !! checkpoint_int is the binary representation of the checkpoint_int.
 
   integer,           parameter :: DP=kind(1.0D0)
   real(kind=Real64), parameter :: farad = 96485.3321233100184_DP !C/mol
@@ -132,10 +132,10 @@ module input_output_netcdf
   
 contains
 
-  !> @brief Error checking subroutine for NetCDF
+  !> @brief Error checking subroutine for NetCDF.
   !!
   !! @details This subroutine takes in an integer error code from NetCDF (ierr), prints out the associated error, and stops the code.
-  !! If there is no error, subroutine continues
+  !! If there is no error, subroutine continues.
   !!
   !! @param[in] ierr      NetCDF error code
   subroutine error_check(ierr)
@@ -150,7 +150,7 @@ contains
     
   end subroutine error_check
 
-  !> @brief I/O subroutine that reads integers from a NetCDF file or writes integers to a NetCDF file
+  !> @brief I/O subroutine that reads integers from a NetCDF file or writes integers to a NetCDF file.
   !!
   !! @details This subroutine reads or writes a single integer or a vector of integers,
   !! from or to a variable with a given name or variable id
@@ -229,7 +229,7 @@ contains
     
   end subroutine assign_int
 
-  !> @brief I/O subroutine that reads reals from a NetCDF file or writes reals to a NetCDF file
+  !> @brief I/O subroutine that reads reals from a NetCDF file or writes reals to a NetCDF file.
   !!
   !! @details This subroutine reads or writes a single real or a vector of reals,
   !! from or to a variable with a given name or variable id
@@ -305,13 +305,13 @@ contains
     end if
   end subroutine assign_real
 
-  !> @brief I/O subroutine that writes integer arrays to a variable with an infinite dimension
+  !> @brief I/O subroutine that writes integer arrays to a variable with an infinite dimension.
   !!
   !! @details This subroutine writes a 2D integer array 'var', 
   !! to the variable named 'var_name' with variable id 'var_id_in' 
   !! in the NetCDF file with id 'file_id' at position 'it'.
   !!
-  !! This should be used to write integer arrays 'var', to a variable 'var_name', with an infinite dimension
+  !! This should be used to write integer arrays 'var', to a variable 'var_name', with an infinite dimension.
   !! 
   !! @param[in]     var             2D integer array
   !! @param[in]     var_name        name of variable to write
@@ -344,13 +344,13 @@ contains
 
   end subroutine assign_exp_int
 
-  !> @brief I/O subroutine that writes real arrays to a variable with an infinite dimension
+  !> @brief I/O subroutine that writes real arrays to a variable with an infinite dimension.
   !!
   !! @details This subroutine writes a 2D real array 'var', 
   !! to the variable named 'var_name' with variable id 'var_id_in' 
   !! in the NetCDF file with id 'file_id' at position 'it'.
   !!
-  !! This should be used to write real arrays 'var', to a variable 'var_name', with an infinite dimension
+  !! This should be used to write real arrays 'var', to a variable 'var_name', with an infinite dimension.
   !! 
   !! @param[in]     var             2D real array
   !! @param[in]     var_name        name of variable to write
@@ -383,17 +383,17 @@ contains
 
   end subroutine assign_exp_real
 
-  !> @brief I/O subroutine that creates a named variable with specific length and data type within a NetCDF file
+  !> @brief I/O subroutine that creates a named variable with specific length and data type within a NetCDF file.
   !!
   !! @details This subroutine creates a variable called 'var_name'
   !! with length 'var_len' and data type 'var_typ' (in this case f90_int or f90_double)
-  !! in a NetCDF file with id 'file_id'
+  !! in a NetCDF file with id 'file_id'.
   !!
   !! You can optionally prescribe units to the variable'units', 
-  !! and if you want to save the variable id you can input a variable to store it 'var_id_out'
+  !! and if you want to save the variable id you can input a variable to store it 'var_id_out'.
   !!
   !! If the file is NOT in definition mode, so already exists,
-  !! you can use (act='add') to add the variable to an existing netcdf file with id 'file_id'
+  !! you can use (act='add') to add the variable to an existing netcdf file with id 'file_id'.
   !! 
   !! @param[in]     var_name       name of variable to be created in NetCDF file
   !! @param[in]     var_len        length of variable to be created in NetCDF file
@@ -438,17 +438,17 @@ contains
     
   end subroutine create_sing_var
 
-  !> @brief I/O subroutine that creates an expanding variable with specific dimensions and data type within a NetCDF file
+  !> @brief I/O subroutine that creates an expanding variable with specific dimensions and data type within a NetCDF file.
   !!
   !! @details This subroutine creates an expanding variable called 'var_name'
   !! with dimensions 'var_len x undefined' and data type 'var_typ' (in this case f90_int or f90_double)
-  !! in a NetCDF file with id 'file_id'
+  !! in a NetCDF file with id 'file_id'.
   !!
   !! You can optionally prescribe units to the variable'units', 
-  !! and if you want to save the variable id you can input a variable to store it 'var_id_out'
+  !! and if you want to save the variable id you can input a variable to store it 'var_id_out'.
   !!
   !! If the file is NOT in definition mode, so already exists,
-  !! you can use (act='add') to add the variable to an existing netcdf file with id 'file_id'
+  !! you can use (act='add') to add the variable to an existing netcdf file with id 'file_id'.
   !! 
   !! @param[in]     var_name       name of variable to be created in NetCDF file
   !! @param[in]     var_len        length of variable to be created in NetCDF file
@@ -496,7 +496,7 @@ contains
 
   end subroutine create_exp_var
 
-  !> @brief I/O subroutine that writes an integer vector or single number to existing variable within a NetCDF file
+  !> @brief I/O subroutine that writes an integer vector or single number to existing variable within a NetCDF file.
   !!
   !! @details This subroutine writes an integer vector 'vect' 
   !! or single number 'sing' to an existing variable named 'var_name'
@@ -535,7 +535,7 @@ contains
     
   end subroutine save_int
 
-  !> @brief I/O subroutine that writes a real vector or single number to existing variable within a NetCDF file
+  !> @brief I/O subroutine that writes a real vector or single number to existing variable within a NetCDF file.
   !!
   !! @details This subroutine writes a real vector 'vect' 
   !! or single number 'sing' to an existing variable named 'var_name'
@@ -574,7 +574,7 @@ contains
     
   end subroutine save_real
 
-  !> @brief Subroutine that closes NetCDF output and checkpoint files that are open
+  !> @brief I/O subroutine that closes NetCDF output and checkpoint files that are open.
   subroutine fin_in_out()
     implicit none
 
@@ -588,9 +588,9 @@ contains
     
   end subroutine fin_in_out
 
-  !> @brief I/O subroutine that opens a NetCDF file, reads values, writes them to global variables and closes the file
+  !> @brief I/O subroutine that opens a NetCDF file, reads values, writes them to global variables and closes the file.
   !!
-  !! @details As a test case, if no file_name is given a series of test values are prescribed instead
+  !! @details As a test case, if no file_name is given a series of test values are prescribed instead.
   !!
   !! @param[in]  file_name         name of NetCDF file to open
   subroutine import_input(file_name)
@@ -656,7 +656,7 @@ contains
     
   end subroutine import_input
 
-  !> @brief I/O subroutine that creates a NetCDF file, initiates input variables and saves variables that are available
+  !> @brief I/O subroutine that creates a NetCDF file, initiates input variables and saves variables that are available.
   !!
   !! @param[in]  file_name         name of NetCDF file to create
   subroutine initiate_file(file_name)
@@ -711,7 +711,7 @@ contains
 
   end subroutine initiate_file
   
-  !> @brief I/O subroutine that creates a NetCDF file, initiates checkpoint specific variables and saves available variables
+  !> @brief I/O subroutine that creates a NetCDF file, initiates checkpoint specific variables and saves available variables.
   !!
   !! @param[in]  file_name         name of NetCDF file to create
   subroutine initiate_checkp(file_name)
@@ -736,7 +736,7 @@ contains
     call assign_int(check_id, 'w', sing=space_steps, var_name='space_steps')
     
   end subroutine initiate_checkp
-  !> @brief I/O subroutine that reads from a checkpoint file and saves the concentration vector
+  !> @brief I/O subroutine that reads from a checkpoint file and saves the concentration vector.
   !!
   !! @details This subroutine reads from a checkpoint file named 'file_name' 
   !! and saves the concentration vector to 'conc'.
@@ -777,8 +777,8 @@ contains
     
   end subroutine load_checkp
 
-  !>This subroutine overwrites the concentration vector (conc) and number of time steps (step_num) in the checkpoint NetCDF file
-  !> @brief I/O subroutine that overwrites the concentration vector and number of time steps in the checkpoint NetCDF file
+
+  !> @brief I/O subroutine that overwrites the concentration vector and number of time steps in the checkpoint NetCDF file.
   !!
   !! @param[in,out]    conc                 concentration vector
   !! @param[in,out]    step_num             number of time steps

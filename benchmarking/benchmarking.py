@@ -41,7 +41,7 @@ if np.max(cp1) < np.max(cs1):
 else:
     c1_max = np.max(cs1)
 rmse1 = np.sqrt(np.sum((cs1-cp1)**2)/cp1.size)
-print('The root mean suqaure error for charging with default values is {x:=5.3f}'.format(x=rmse1))
+print('The root mean square error for charging with default values is {x:=5.3f}'.format(x=rmse1))
 
 cp2 = pybamm_sim2['conc'][:]
 cs2 = SP_sim2['conc'][:].T
@@ -56,7 +56,7 @@ if np.max(cp2) < np.max(cs2):
 else:
     c2_max = np.max(cs2)  
 rmse2 = np.sqrt(np.sum((cs2-cp2)**2)/cp2.size)
-print('The root mean suqaure error for discharging with default values is {x:=5.3f}'.format(x=rmse2))
+print('The root mean square error for discharging with default values is {x:=5.3f}'.format(x=rmse2))
 
 # PyBamm only evaluates every 60th timestep - reshape our own concentration data to have the same shape to get RMSE
 cp3_all = pybamm_sim3['conc'][:]
@@ -79,7 +79,7 @@ if np.max(cp1) < np.max(cs3):
 else:
     c3_max = np.max(cs3)
 rmse3 = np.sqrt(np.sum((cs3-cp3)**2)/cp3.size)
-print('The root mean suqaure error when running a GITT cycle is {x:=5.3f}'.format(x=rmse3))
+print('The root mean square error when running a GITT cycle is {x:=5.3f}'.format(x=rmse3))
 
 
 cp4 = pybamm_sim4['conc'][:]
@@ -95,7 +95,7 @@ if np.max(cp4) < np.max(cs4):
 else:
     c4_max = np.max(cs4)  
 rmse4 = np.sqrt(np.sum((cs4-cp4)**2)/cp4.size)
-print('The root mean suqaure error when increasing the diffusion coefficient is {x:=5.3f}'.format(x=rmse4))
+print('The root mean square error when increasing the diffusion coefficient is {x:=5.3f}'.format(x=rmse4))
 
 cp5 = pybamm_sim5['conc'][:]
 cs5 = SP_sim5['conc'][:].T
@@ -110,7 +110,7 @@ if np.max(cp5) < np.max(cs5):
 else:
     c5_max = np.max(cs5)
 rmse5 = np.sqrt(np.sum((cs5-cp5)**2)/cp5.size)
-print('The root mean suqaure error when increasing the radius is {x:=5.3f}'.format(x=rmse5))
+print('The root mean square error when increasing the radius is {x:=5.3f}'.format(x=rmse5))
 
 # plot with subplots showing the evolution of concentration over time from both PyBaMM and our
 # results on the left and the evolution of the relative absolute error on the right
@@ -156,7 +156,7 @@ def animate(i):
     conc_cs5.set_ydata(cs5[:,i])
     err5.set_ydata(err_sim5[:,i])
     return conc_cp1, conc_cs1, err1, conc_cp2, conc_cs2, err2, conc_cp4, conc_cs4, err4, conc_cp5, conc_cs5, err5,
-animation = FuncAnimation(fig, animate, interval=intervaltime, frames=time_axis, blit=True)
+animation = FuncAnimation(fig, animate, interval=intervaltime, frames=time_axis, blit=True, repeat=False)
 
 # separate animation for the GITT experiment since the timeframe is different to the other animations
 def animate_GITT(i):
@@ -164,7 +164,7 @@ def animate_GITT(i):
     conc_cs3.set_ydata(cs3[:,i])
     err3.set_ydata(err_sim3[:,i])
     return conc_cp3, conc_cs3, err3,
-animation_GITT = FuncAnimation(fig, animate_GITT, interval=intervaltime, frames=np.arange(0,len(t3),1), blit=True)
+animation_GITT = FuncAnimation(fig, animate_GITT, interval=intervaltime, frames=np.arange(0,len(t3),1), blit=True, repeat=False)
 
 #customisign the various subplots
 axs[0,0].set_xlabel('Distance from particle centre [$\mu m$]', size=8)
@@ -299,7 +299,6 @@ axs[4,1].text(0, np.max(err_sim3)+0.02, r"RMSE = {x:=5.3f} $mol*m^{{-3}}$".forma
 
 plt.tight_layout()
 plt.show()
-plt.close()
 
 # calculating root mean square error for discretisation convergence
 c_dis025_all = SP_dis025['conc'][:].T
@@ -356,8 +355,8 @@ y = np.array([rmse_dis025, rmse_dis05, rmse_dis1, rmse_dis2, rmse_dis4, rmse_dis
 figure, ax = plt.subplots()
 ax.plot(x,y)
 
+plt.tight_layout()
 plt.show()
-plt.close()
 
 SP_sim1.close()
 SP_sim2.close()

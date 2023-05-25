@@ -137,6 +137,11 @@ vis_uncer_from_sens:
 	(cd ./uq_code ; gnome-terminal --tab -- python3 vis_uncer_sens.py)
 	
 	
+.PHONY: benchmarking
+benchmarking:
+	(cd ./benchmarking ; gnome-terminal --tab -- python3 benchmarking.py)		
+	
+	
 .PHONY: virtual
 virtual: 
 	chmod +x compile.sh

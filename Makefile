@@ -96,47 +96,64 @@ docs:
 	(cd ./doxygen/output/latex && make)
 	cp ./doxygen/output/latex/refman.pdf docs.pdf
 	ln -s ./doxygen/output/html/index.html docs.html
-
+	
+	
+#Perform sensitivity analysis and then display the results
 .PHONY: sensitive
 sensitive:
 	(cd ./uq_code && ./sens_ana.sh False)
-
+	
+#Display the results from the sensitivity analysis
 .PHONY: vis_sens
 vis_sens:
 	(cd ./uq_code ; gnome-terminal --tab -- python3 visual_uq_res.py)
 
+#Perform uncertainty propagation using random latin hypercube sampling and display the results
 .PHONY: uncertain
 uncertain:
 	(cd ./uq_code && ./up_code.sh False)
 
+#This PHONY command executes visual_up_data.py to visualise random latin hyper cube analysis results in a new terminal.
 .PHONY: vis_uncer
 vis_uncer:
 	(cd ./uq_code ; gnome-terminal --tab -- python3 visual_up_data.py False)
 
+
+#This PHONY command executes sens_ana.sh False followed by up_code.sh True to perform sensitivity analysis, from this calculate an approximate uncertainty and then perform random latin hyper cube sampling to quantify uncertainty. Then plots results.
 .PHONY: sens_uncer
 sens_uncer:
 	(cd ./uq_code && ./sens_ana.sh False)
 	(cd ./uq_code && ./up_code.sh True)
+	
+	
 
+#This PHONY commands visualises the approximate uncertainty calculated from sensitivity analysis.
 .PHONY: vis_sens_uncer
 vis_sens_uncer:
 	(cd ./uq_code ; gnome-terminal --tab -- python3 visual_up_data.py True)
 
+
+#This PHONY command calculates an approximate uncertainty using standard deviation and displays this alongside already existing data from random latin hyper cube sampling.
 .PHONY: sens_uncer_sep
 sens_uncer_sep:
 	(cp ./uq_code/data_store_up/SPM_input_ori.nc ./uq_code/)
 	(cd ./uq_code && python3 generate_inp_params.py True)
 	(cd ./uq_code ; gnome-terminal --tab -- python3 visual_up_data.py True)
+	
 
+
+#This PHONY command calculates and displays approximate uncertainty calculated from sensitivity analysis.
 .PHONY: uncer_from_sens
 uncer_from_sens:
 	(cd ./uq_code && ./sens_ana.sh True)
-
+	
+	
+#This PHONY command displays approximate uncertainty calculated from sensitivity analysis.
 .PHONY: vis_uncer_from_sens
 vis_uncer_from_sens:
 	(cd ./uq_code ; gnome-terminal --tab -- python3 vis_uncer_sens.py)
 	
-	
+#Perform benchmarking	
 .PHONY: benchmarking
 benchmarking:
 	(cd ./benchmarking ; gnome-terminal --tab -- python3 benchmarking.py)		

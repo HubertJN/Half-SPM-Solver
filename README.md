@@ -1,4 +1,4 @@
-# PX915 Group Project - Group A
+# Half-SPM-Solver
 
 This is a simulation code for a half-cell single particle model (half-SPM model) written in Fortran90 and interfaced with Python. The code calculates the change in concentration in a single, spherically symmetric particle for a set simulation time from which a voltage profile can also be obtained.
 The relevant input parameters can be set in the Jupyter notebook ‘Input_NetCDF.ipynb’ file, which saves the parameters as a NetCDF file. This will be read by the programme, which runs the simulation and returns a visualisation of the concentration and (if chosen) of the voltage profile.
@@ -114,3 +114,20 @@ jupyter notebook
 ```
 Once Jupyter is launched, find the notebook 'DataFit_int.ipynb' in the Jupyter file browser and open it. You can then run the cells accordingly to preform the optimisation on the diffusion coefficient.
 To see the result without running the notebook, open the png file, 'fitted_diff_coeffs.png'.
+
+## How to obtain the benchmarking results
+The half-SPM model has been benchmarked against the open source simulation package PyBaMM by obtaining the relative absolute error and the root mean square error (RMSE) for 5 different simulations:
+
+1. Charging at 5 A using the default input parameters
+2. Discharging at 5 A starting at 95% state of charge (SOC) using the default for all other input parameters
+3. A galvanostatic intermittent titration technique (GITT) experiment, where the half-cell is rested for 30 minutes (i.e. no current applied), followed by discharge at 1 A for 5 minutes and another rest period for 30 minutes
+4. Charging with a diffusion coefficient of $4*10^{-10} \ m^2 s^{-1}$ using the default for all other input parameters
+5. Charging with a mean particle radius of $7 \mu m$ using the default for all other input parameters
+
+A convergence study of the RMSE with respect to the time step is also provided.
+
+The results can be obtained by running the following comamnd:
+
+```
+make benchmarking
+```

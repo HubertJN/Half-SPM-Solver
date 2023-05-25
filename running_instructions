@@ -1,0 +1,35 @@
+
+
+1. Open the working forlder in the terminal
+
+2. For the first time use, one must set up a virtual enviroment. Run:
+make virtual
+This would have created a folder called "venv" that contains the necessary files for the Python virtual environment.
+
+3. Activate the virtual environment by running: 
+source venv/bin/activate
+
+4. Intstall the required modules into the virtual environment:
+make mods
+
+6. Run "Input_NetCDF.ipynb" to create inputs. 
+
+5. The main program is ready for compilation. Run to compile:
+make 
+
+6. Run the solver using the created object files:
+make exe
+
+7. Create a visual output:
+make visual
+
+8. To perform the data fitting, run:
+cd datafitting
+./compile.sh
+
+9. Open the notebook by typing:
+jupyter notebook
+Running it will produce a data fitting plot. 
+
+10. To deactivate a virtual environment, type:
+deactivate

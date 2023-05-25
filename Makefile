@@ -20,12 +20,12 @@ endif
 
 main=main.f90
 
-exe=test.out
+exe=spmsolver.out
 
 object=input_output_netcdf.o pde.o
 
 #Compile line
-test.out: $(object)
+spmsolver.out: $(object)
 		$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
 		-rm -f *.o *.mod
 		chmod +x uq_code/sens_ana.sh
@@ -47,7 +47,7 @@ endif
 
 
 #Checking the compilation status
-ifeq ("$(wildcard $(./test.out))","")
+ifeq ("$(wildcard $(./$(exe)))","")
 	@echo "Compilation sucessful"
 else
 	@echo "Compilation failed"
@@ -62,11 +62,11 @@ endif
 .PHONY: exe
 ifeq ($(num_threads),1)	
 exe: 		
-		@./test.out
+		@./$(exe)
 		@echo "Running Serial code"
 else
 exe:
-		@OMP_NUM_THREADS=$(num_threads) ./test.out 
+		@OMP_NUM_THREADS=$(num_threads) ./$(exe)
 		@echo "Running Parallel code. Number of threads = " $(num_threads)
 endif
 
@@ -141,7 +141,7 @@ vis_uncer_from_sens:
 benchmarking:
 	(cd ./benchmarking ; gnome-terminal --tab -- python3 benchmarking.py)		
 	
-	
+#Create a virtual environment 	
 .PHONY: virtual
 virtual: 
 	chmod +x datafitting/compile.sh
@@ -149,7 +149,7 @@ virtual:
 	sudo apt install python3.10-venv
 	python3 -m venv venv
 
-
+#Install modules for the virtual environment
 #must be done after venv is activated: source venv/bin/activate
 .PHONY: mods
 mods:

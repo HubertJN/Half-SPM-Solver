@@ -32,3 +32,94 @@ vis_uncer_sens.py extracts the standard deviations of the voltage at each time s
 
 ## Makefile
 
+The Makefile compiles the code and contain various commands to run the code.
+
+### make clean
+```
+make clean
+```
+This PHONY command clears the directory to the same state as if just installed.
+
+### make
+```
+make
+```
+This command compiles the code and depending on the variable num_threads compiles with (num_threads > 1) or without (num_threads = 1) OpenMP. 
+
+### make exe
+```
+make exe
+```
+This PHONY command executes the executable.
+
+### make visual
+```
+make visual
+```
+This PHONY command call plots.py to visualise results.
+
+### make docs
+```
+make docs
+```
+This PHONY command attempts to delete previously existing doxygen files and regenerates the documentation. This command requires the doxygen packaged to be installed in order to run.
+
+### make sensitive
+```
+make sensitive
+```
+This PHONY command executes sens_ana.sh False to perform sensitivity analysis.
+
+### make vis_sens
+```
+make vis_sens
+```
+This PHONY command executes visual_uq_res.py to visualise sensitivity analysis data in a new terminal.
+
+### make uncertain
+```
+make uncertain
+```
+This PHONY command executes up_code.sh False to perform random latin hyper cube sampling of voltage.
+
+### make vis_uncer
+```
+make vis_uncer
+```
+This PHONY command executes visual_up_data.py to visualise random latin hyper cube analysis results in a new terminal.
+
+### make sens_uncer
+```
+make sens_uncer
+```
+This PHONY command executes sens_ana.sh False followed by up_code.sh True to perform sensitivity analysis, from this calculate an approximate uncertainty and then perform random latin hyper cube sampling to quantify uncertainty. Then plots results.
+
+### make vis_sens_uncer
+```
+make vis_sens_uncer
+```
+This PHONY commands visualises the approximate uncertainty calculated from sensitivity analysis.
+
+### make sens_uncer_sep
+```
+make sens_uncer_sep
+```
+This PHONY command calculates an approximate uncertainty using standard deviation and displays this alongside already existing data from random latin hyper cube sampling.
+
+### make uncer_from_sens
+```
+make uncer_from_sens
+```
+This PHONY command calculates and displays approximate uncertainty calculated from sensitivity analysis.
+
+### make vis_uncer_from_sens
+```
+make vis_uncer_from_sens
+```
+This PHONY command displays approximate uncertainty calculated from sensitivity analysis.
+
+### make benchmarking
+```
+make benchmarking
+```
+This PHONY command

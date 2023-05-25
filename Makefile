@@ -143,6 +143,10 @@ virtual:
 	chmod +x compile_1.sh
 	sudo apt install python3.10-venv
 	python3 -m venv venv
+	
+.PHONY: benchmarking
+benchmarking:
+	(cd ./benchmarking ; gnome-terminal --tab -- python3 benchmarking.py)
 
 
 #must be done after venv is activated: source venv/bin/activate

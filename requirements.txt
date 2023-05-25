@@ -5,6 +5,8 @@ matplotlib
 scipy
 python-math
 netCDF4 
-
+jupyter_contrib_nbextensions
+pybamm
+ipywidgets
 
 

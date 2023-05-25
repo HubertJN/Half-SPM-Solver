@@ -47,7 +47,7 @@ endif
 
 
 #Checking the compilation status
-ifeq ("$(wildcard $(./spmsolver.out))","")
+ifeq ("$(wildcard $(./$(exe)))","")
 	@echo "Compilation sucessful"
 else
 	@echo "Compilation failed"
@@ -62,11 +62,11 @@ endif
 .PHONY: exe
 ifeq ($(num_threads),1)	
 exe: 		
-		@./spmsolver.out
+		@./$(exe)
 		@echo "Running Serial code"
 else
 exe:
-		@OMP_NUM_THREADS=$(num_threads) ./spmsolver.out
+		@OMP_NUM_THREADS=$(num_threads) ./$(exe)
 		@echo "Running Parallel code. Number of threads = " $(num_threads)
 endif
 

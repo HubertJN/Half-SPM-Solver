@@ -137,9 +137,14 @@ vis_uncer_from_sens:
 	(cd ./uq_code ; gnome-terminal --tab -- python3 vis_uncer_sens.py)
 	
 	
+.PHONY: benchmarking
+benchmarking:
+	(cd ./benchmarking ; gnome-terminal --tab -- python3 benchmarking.py)		
+	
+	
 .PHONY: virtual
 virtual: 
-	chmod +x compile.sh
+	chmod +x datafitting/compile.sh
 	#chmod +x compile_1.sh
 	sudo apt install python3.10-venv
 	python3 -m venv venv

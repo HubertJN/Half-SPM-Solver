@@ -301,57 +301,33 @@ plt.tight_layout()
 plt.show()
 
 # calculating root mean square error for discretisation convergence
-c_dis025_all = SP_dis025['conc'][:].T
-c_dis025 = np.zeros_like(cp1)
-for i in range (c_dis025.shape[0]):
-    for j in range (c_dis025.shape[1]-1):
-        c_dis025[i,j] = c_dis025_all[i,j*4]
-c_dis025[:,-1] = c_dis025_all[:,-1]
-rmse_dis025 = np.sqrt(np.sum((c_dis025-cp1)**2)/cp1.size).astype(float)
+c_dis025 = SP_dis025['conc'][:].T
+rmse_dis025 = np.sqrt(np.sum((c_dis025[:,-1]-cp1[:,-1])**2)/cp1[:,-1].size).astype(float)
 print('The root mean square error with dt=0.25 is {x:=5.3f} [mol.m-3]'.format(x=rmse_dis025))
 
-c_dis05_all = SP_dis05['conc'][:].T
-c_dis05 = np.zeros_like(cp1)
-for i in range (c_dis05.shape[0]):
-    for j in range (c_dis05.shape[1]-1):
-        c_dis05[i,j] = c_dis05_all[i,j*2]
-c_dis05[:,-1] = c_dis05_all[:,-1]
-rmse_dis05 = np.sqrt(np.sum((c_dis05-cp1)**2)/cp1.size).astype(float)
+c_dis05 = SP_dis05['conc'][:].T
+rmse_dis05 = np.sqrt(np.sum((c_dis05[:,-1]-cp1[:,-1])**2)/cp1[:,-1].size).astype(float)
 print('The root mean square error with dt=0.5 is {x:=5.3f} [$mol*m^{{-3}}$]'.format(x=rmse_dis05))
 
-rmse_dis1 = np.sqrt(np.sum((cs1-cp1)**2)/cp1.size).astype(float)
+rmse_dis1 = np.sqrt(np.sum((cs1[:,-1]-cp1[:,-1])**2)/cp1[:,-1].size).astype(float)
 print('The root mean square error with dt=1 is {x:=5.3f} [mol.m-3]'.format(x=rmse_dis1))
 
 c_dis2 = SP_dis2['conc'][:].T
-cp1_dis2 = np.zeros_like(c_dis2)
-for i in range (cp1_dis2.shape[0]):
-    for j in range (cp1_dis2.shape[1]-1):
-        cp1_dis2[i,j] = cp1[i,j*2]
-cp1_dis2[:,-1] = cp1[:,-1]
-rmse_dis2 = np.sqrt(np.sum((c_dis2-cp1_dis2)**2)/cp1_dis2.size).astype(float)
+rmse_dis2 = np.sqrt(np.sum((c_dis2[:,-1]-cp1[:,-1])**2)/cp1[:,-1].size).astype(float)
 print('The root mean square error with dt=2 is {x:=5.3f} [mol.m-3]'.format(x=rmse_dis2))
 
 c_dis4 = SP_dis4['conc'][:].T
-cp1_dis4 = np.zeros_like(c_dis4)
-for i in range (cp1_dis4.shape[0]):
-    for j in range (cp1_dis4.shape[1]-1):
-        cp1_dis4[i,j] = cp1[i,j*4]
-cp1_dis4[:,-1] = cp1[:,-1]
-rmse_dis4 = np.sqrt(np.sum((c_dis4-cp1_dis4)**2)/cp1_dis4.size).astype(float)
+rmse_dis4 = np.sqrt(np.sum((c_dis4[:,-1]-cp1[:,-1])**2)/cp1[:,-1].size).astype(float)
 print('The root mean square error with dt=4 is {x:=5.3f} [mol.m-3]'.format(x=rmse_dis4))
 
 c_dis8 = SP_dis8['conc'][:].T
-cp1_dis8 = np.zeros_like(c_dis8)
-for i in range (cp1_dis8.shape[0]):
-    for j in range (cp1_dis8.shape[1]-1):
-        cp1_dis8[i,j] = cp1[i,j*8]
-cp1_dis8[:,-1] = cp1[:,-1]
-rmse_dis8 = np.sqrt(np.sum((c_dis8-cp1_dis8)**2)/cp1_dis8.size).astype(float)
+rmse_dis8 = np.sqrt(np.sum((c_dis8[:,-1]-cp1[:,-1])**2)/cp1[:,-1].size).astype(float)
 print('The root mean square error with dt=8 is {x:=5.3f} [mol.m-3]'.format(x=rmse_dis8))
 
 x = np.array([0.25, 0.5, 1.0, 2.0, 4.0 ,8.0])
 y = np.array([rmse_dis025, rmse_dis05, rmse_dis1, rmse_dis2, rmse_dis4, rmse_dis8])
 
+#plotting of convergence plot
 figure, ax = plt.subplots()
 ax.plot(x,y)
 ax.set_xlabel('Time step [s]', size=8)
@@ -367,6 +343,7 @@ ax.yaxis.offsetText.set_fontsize(7)
 ax.set_title('Convergence of RMSE with time step', size=10, pad=15.0)
 plt.show()
 
+#closing all NetCDF files
 SP_sim1.close()
 SP_sim2.close()
 SP_sim3.close()

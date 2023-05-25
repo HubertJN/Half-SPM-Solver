@@ -140,16 +140,14 @@ vis_uncer_from_sens:
 .PHONY: virtual
 virtual: 
 	chmod +x compile.sh
-	chmod +x compile_1.sh
+	#chmod +x compile_1.sh
 	sudo apt install python3.10-venv
 	python3 -m venv venv
-	
-.PHONY: benchmarking
-benchmarking:
-	(cd ./benchmarking ; gnome-terminal --tab -- python3 benchmarking.py)
 
 
 #must be done after venv is activated: source venv/bin/activate
 .PHONY: mods
 mods:
 	pip install -r requirements.txt 
+	jupyter contrib nbextension install --user
+	jupyter nbextension enable codefolding/main

@@ -41,7 +41,7 @@ plt.plot(x, ana[1, :], color='C0', alpha=0.5)
 dat_fram = {'mean volt': volt_dat_mu,
             '5th percentile': ana[0,:],
             '95th percentile': ana[1,:]}
-df = pd.DataFrame(dat_fram, columns=['mean', '5th percentile', '95th percentile'])
+df = pd.DataFrame(dat_fram, columns=['mean', '2.5th percentile', '97.5th percentile'])
 df.to_csv('voltage_confidence_up.csv', index=False)
 
 #Plot the mean voltage

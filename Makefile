@@ -141,7 +141,7 @@ vis_uncer_from_sens:
 benchmarking:
 	(cd ./benchmarking ; gnome-terminal --tab -- python3 benchmarking.py)		
 	
-	
+#Create a virtual environment 	
 .PHONY: virtual
 virtual: 
 	chmod +x datafitting/compile.sh
@@ -149,7 +149,7 @@ virtual:
 	sudo apt install python3.10-venv
 	python3 -m venv venv
 
-
+#Install modules for the virtual environment
 #must be done after venv is activated: source venv/bin/activate
 .PHONY: mods
 mods:

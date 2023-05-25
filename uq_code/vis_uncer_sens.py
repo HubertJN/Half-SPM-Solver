@@ -1,3 +1,5 @@
+#Script to visualise the uncertainty from the sensitivity analysis data
+
 #Import relevant packages
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,8 +23,10 @@ plt.xlabel('Time [s]')
 plt.ylabel('Voltage [V]')
 plt.grid()
 
+#Import the standard deviations calculated earlier from sensitivity analysis
 std_V_dat = pd.read_csv('./data_store_sens/std_V_dat.csv')
 
+#Save data to an array, create 95% confidence range and plot
 std_V = np.array(std_V_dat['std_V'][:])
 low_b = volt_dat_mu-(2*std_V)
 up_b = volt_dat_mu+(2*std_V)
@@ -33,6 +37,8 @@ plt.plot(x, up_b, alpha=0.5, color='C3')
 #Display the plot
 plt.legend()
 
+#Close file
 dat_mu.close()
 
+#Display
 plt.show()

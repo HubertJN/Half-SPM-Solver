@@ -32,8 +32,10 @@ Important consideration are:
 - If an anode material is being simulated, it will still be the positive electrode with respect to lithium in this half-cell SMP model and the parameters need to be set accordingly
 
 ## Running the Simulation
-Once the input parameters are set and the 'SPM_input.nc' file has been created, the simulation can be run using the provided Makefile. 
-To compile the code the command is:
+Once the input parameters are set and the 'SPM_input.nc' file has been created, the simulation can be run using the provided Makefile.
+
+### Serial Code
+To run the code in serial execute the following commands:
 <br>
 ```
 make
@@ -48,6 +50,8 @@ To visualise the output, the command is:
 ```
 make visual
 ```
+### Parallel Code
+To run in parallel open "Makefile" and set "num_threads" to the desired number of threads to parellise over. Run same commands as above.
 
 ## Documention
 For more information see our [documentation](./docs.pdf).

@@ -1,18 +1,6 @@
 #!/bin/bash
-#chmod u+r+x compile.sh if permission denied
 
-#python3 -m venv venv
-#source venv/bin/activate
-#vim requirements.txt - names of mods
-#pip install numpy
-#pip install jupyter notebook
-#pip install requirements.txt 
-#pip install pandas
-#pip install matplotlib
-#pip freeze list >> requirements.txt - add all existing modules to requirements
-#deactivate
-#timeArr = np.asfortranarray(timeArr)
-
+#make sure vevnv is activated and requirements are installed!
 
 f2pyfiles="datafitPde.f90"
 #rm *.o *.mod

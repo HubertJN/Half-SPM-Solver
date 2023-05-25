@@ -29,10 +29,6 @@ PROGRAM main
     MODULE PROCEDURE volt_array
   END INTERFACE volt_calc
   
-  !TODO: main program:
-  !test functions
-  !mesh
-  
   !> @var character loadname 
   !!
   !! Name of the input file.

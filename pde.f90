@@ -146,7 +146,6 @@ CONTAINS
     rhs = 0.0_REAL64
     crank_nicholson = 0.0_REAL64
     
-    !B_mod = B
     A_mod = A
     
     !generate RHS
@@ -157,20 +156,21 @@ CONTAINS
        end do
     end do
     
-    !rhs = MATMUL(B,c_cur)
    
     rhs(n) = rhs(n) - rhs_const
     
     !dgesv solver
     CALL dgesv(n,1,A_mod,n,ipiv,rhs,n,info)
     
-    !Error handling - crude at this stage
-    IF (info < 0) THEN
-      PRINT *, 'Argument number', -info, 'in dgtsv is illegal' 
-      ERROR STOP
-    ELSE IF (info > 0) THEN
-      PRINT *, 'Determinant of matrix A is zero in Ax=b'
-      ERROR STOP
+    !Error handling
+    if (info /= 0) then
+       if (info < 0) then
+          PRINT *, 'Argument number', -info, 'in dgesv is illegal' 
+          ERROR STOP
+       ELSE
+          PRINT *, 'Determinant of matrix A is zero in Ax=b'
+          ERROR STOP
+       end if
     END IF
     
     !Assign solution to output matrix
@@ -188,18 +188,14 @@ CONTAINS
   !! @param[in] x                The stoichiometry
 
   FUNCTION U_scalar(x)
-  
-    !Accepts SCALAR x - stoichiometry
-    !Outputs U(c)
     
     REAL(REAL64), INTENT(IN) :: x
     REAL(REAL64) :: U_scalar
-    
-    !U+ implemented (U- can be implemented later if needed)
+
+    !Outputs U(c)
     U_scalar = -0.8090_REAL64*x + 4.4875_REAL64 - 0.0428_REAL64*TANH(18.5138_REAL64*(x-0.5542_REAL64)) &
                -17.7326_REAL64*TANH(15.7890_REAL64*(x-0.3117_REAL64)) & 
                +17.5842_REAL64*TANH(15.9308_REAL64*(x-0.3120_REAL64))
-    ! and ESSENTIAL PARAMETERS
                  
   END FUNCTION U_scalar
   
@@ -209,9 +205,6 @@ CONTAINS
   !! @param x       Array version of the stoichiometry
 
   FUNCTION U_arr(x)
-    
-    !Accepts 1D ARRAY x - stoichiometry
-    !Outputs U(c) as 1D array
     
     REAL(REAL64), DIMENSION(:), INTENT(IN) :: x
     REAL(REAL64), DIMENSION(:), ALLOCATABLE :: U_arr
@@ -225,7 +218,7 @@ CONTAINS
     
     ALLOCATE(U_arr(size_arr))
     
-    !U+ implemented (U- can be implemented later if needed)
+    !Outputs U(c) as 1D array
     U_arr = -0.8090_REAL64*x + 4.4875_REAL64 - 0.0428_REAL64*TANH(18.5138_REAL64*(x-0.5542_REAL64)) &
             -17.7326_REAL64*TANH(15.7890_REAL64*(x-0.3117_REAL64)) & 
             +17.5842_REAL64*TANH(15.9308_REAL64*(x-0.3120_REAL64))
@@ -266,10 +259,6 @@ CONTAINS
   !! @param[in] arrin           array input of concentrations
 
   FUNCTION volt_array(arrin)
-    
-    !Calculates an array of voltages when given 
-    !an ARRAY INPUT of concentrations
-    
    
     REAL(REAL64), DIMENSION(:), INTENT(IN) :: arrin
     
@@ -295,23 +284,12 @@ CONTAINS
    ALLOCATE(volt_array(size_arr))
    ALLOCATE(arsinh(size_arr))
    ALLOCATE(div_const(size_arr))
-
-   !Calculates arsinh part
-   !div_const = arrin/max_c
-    
-   !arsinh = farad*rr_coef*SQRT(div_const - (div_const**2))
-   !arsinh = volt_con_ial/arsinh
-   !arsinh = ASINH(arsinh)
-    
-   !volt_array = U_arr(div_const) - (volt_con_rtf*arsinh)
    
    !$OMP parallel do default (shared) private(i, arsinh)
    do i = 1, size_arr
       volt_array(i) = volt_scalar(arrin(i))
    end do 
    
-   
-    
  END FUNCTION volt_array
     
 END MODULE pde_solver

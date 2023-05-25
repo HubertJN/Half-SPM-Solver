@@ -20,12 +20,12 @@ endif
 
 main=main.f90
 
-exe=test.out
+exe=spmsolver.out
 
 object=input_output_netcdf.o pde.o
 
 #Compile line
-test.out: $(object)
+spmsolver.out: $(object)
 		$(compiler) $(flags) $(object) $(main) $(libraries) -o $(exe)
 		-rm -f *.o *.mod
 		chmod +x uq_code/sens_ana.sh
@@ -47,7 +47,7 @@ endif
 
 
 #Checking the compilation status
-ifeq ("$(wildcard $(./test.out))","")
+ifeq ("$(wildcard $(./spmsolver.out))","")
 	@echo "Compilation sucessful"
 else
 	@echo "Compilation failed"
@@ -62,11 +62,11 @@ endif
 .PHONY: exe
 ifeq ($(num_threads),1)	
 exe: 		
-		@./test.out
+		@./spmsolver.out
 		@echo "Running Serial code"
 else
 exe:
-		@OMP_NUM_THREADS=$(num_threads) ./test.out 
+		@OMP_NUM_THREADS=$(num_threads) ./spmsolver.out
 		@echo "Running Parallel code. Number of threads = " $(num_threads)
 endif
 

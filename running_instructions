@@ -23,7 +23,8 @@ make exe
 7. Create a visual output:
 make visual
 
-8. To perform the data fitting, go to the datafitting folder and run:
+8. To perform the data fitting, run:
+cd datafitting
 ./compile.sh
 
 9. Open the notebook by typing:

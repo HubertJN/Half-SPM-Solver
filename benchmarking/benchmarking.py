@@ -41,7 +41,7 @@ if np.max(cp1) < np.max(cs1):
 else:
     c1_max = np.max(cs1)
 rmse1 = np.sqrt(np.sum((cs1-cp1)**2)/cp1.size)
-print('The root mean square error for charging with default values is {x:=5.3f}'.format(x=rmse1))
+print('The root mean square error for charging with default values is {x:=5.3f} [mol.m-3]'.format(x=rmse1))
 
 cp2 = pybamm_sim2['conc'][:]
 cs2 = SP_sim2['conc'][:].T
@@ -56,7 +56,7 @@ if np.max(cp2) < np.max(cs2):
 else:
     c2_max = np.max(cs2)  
 rmse2 = np.sqrt(np.sum((cs2-cp2)**2)/cp2.size)
-print('The root mean square error for discharging with default values is {x:=5.3f}'.format(x=rmse2))
+print('The root mean square error for discharging with default values is {x:=5.3f} [mol.m-3]'.format(x=rmse2))
 
 # PyBamm only evaluates every 60th timestep - reshape our own concentration data to have the same shape to get RMSE
 cp3_all = pybamm_sim3['conc'][:]
@@ -79,7 +79,7 @@ if np.max(cp1) < np.max(cs3):
 else:
     c3_max = np.max(cs3)
 rmse3 = np.sqrt(np.sum((cs3-cp3)**2)/cp3.size)
-print('The root mean square error when running a GITT cycle is {x:=5.3f}'.format(x=rmse3))
+print('The root mean square error when running a GITT cycle is {x:=5.3f} [mol.m-3]'.format(x=rmse3))
 
 
 cp4 = pybamm_sim4['conc'][:]
@@ -95,7 +95,7 @@ if np.max(cp4) < np.max(cs4):
 else:
     c4_max = np.max(cs4)  
 rmse4 = np.sqrt(np.sum((cs4-cp4)**2)/cp4.size)
-print('The root mean square error when increasing the diffusion coefficient is {x:=5.3f}'.format(x=rmse4))
+print('The root mean square error when increasing the diffusion coefficient is {x:=5.3f} [mol.m-3]'.format(x=rmse4))
 
 cp5 = pybamm_sim5['conc'][:]
 cs5 = SP_sim5['conc'][:].T
@@ -110,7 +110,7 @@ if np.max(cp5) < np.max(cs5):
 else:
     c5_max = np.max(cs5)
 rmse5 = np.sqrt(np.sum((cs5-cp5)**2)/cp5.size)
-print('The root mean square error when increasing the radius is {x:=5.3f}'.format(x=rmse5))
+print('The root mean square error when increasing the radius is {x:=5.3f} [mol.m-3]'.format(x=rmse5))
 
 # plot with subplots showing the evolution of concentration over time from both PyBaMM and our
 # results on the left and the evolution of the relative absolute error on the right
@@ -170,7 +170,7 @@ animation_GITT = FuncAnimation(fig, animate_GITT, interval=intervaltime, frames=
 axs[0,0].set_xlabel('Distance from particle centre [$\mu m$]', size=8)
 axs[0,0].xaxis.set_minor_locator(AutoMinorLocator())
 axs[0,0].tick_params(axis='x', labelsize=7)
-axs[0,0].set_ylabel('Lithium concentration $mol*m^{-3}$', size=8)
+axs[0,0].set_ylabel('Lithium concentration [$mol*m^{-3}$]', size=8)
 axs[0,0].set_ylim(c1_min-1000, c1_max+1000)
 axs[0,0].yaxis.set_minor_locator(AutoMinorLocator())
 axs[0,0].tick_params(axis='y', labelsize=7)
@@ -196,7 +196,7 @@ axs[0,1].text(0, np.max(err_sim1)+0.02, r"RMSE = {x:=5.3f} $mol*m^{{-3}}$".forma
 axs[1,0].set_xlabel('Distance from particle centre [$\mu m$]', size=8)
 axs[1,0].xaxis.set_minor_locator(AutoMinorLocator())
 axs[1,0].tick_params(axis='x', labelsize=7)
-axs[1,0].set_ylabel('Lithium concentration $mol*m^{-3}$', size=8)
+axs[1,0].set_ylabel('Lithium concentration [$mol*m^{-3}$]', size=8)
 axs[1,0].set_ylim(c2_min-1000, c2_max+1000)
 axs[1,0].yaxis.set_minor_locator(AutoMinorLocator())
 axs[1,0].tick_params(axis='y', labelsize=7)
@@ -222,7 +222,7 @@ axs[1,1].text(0, np.max(err_sim2)+0.02, r"RMSE = {x:=5.3f} $mol*m^{{-3}}$".forma
 axs[2,0].set_xlabel('Distance from particle centre [$\mu m$]', size=8)
 axs[2,0].xaxis.set_minor_locator(AutoMinorLocator())
 axs[2,0].tick_params(axis='x', labelsize=7)
-axs[2,0].set_ylabel('Lithium concentration $mol*m^{-3}$', size=8)
+axs[2,0].set_ylabel('Lithium concentration [$mol*m^{-3}$]', size=8)
 axs[2,0].set_ylim(c4_min-8000, c4_max+1000)
 axs[2,0].yaxis.set_minor_locator(AutoMinorLocator())
 axs[2,0].tick_params(axis='y', labelsize=7)
@@ -248,7 +248,7 @@ axs[2,1].text(0, np.max(err_sim4)+0.03, r'RMSE = {x:=5.3f} $mol*m^{{-3}}$'.forma
 axs[3,0].set_xlabel('Distance from particle centre [$\mu m$]', size=8)
 axs[3,0].xaxis.set_minor_locator(AutoMinorLocator())
 axs[3,0].tick_params(axis='x', labelsize=7)
-axs[3,0].set_ylabel('Lithium concentration $mol*m^{-3}$', size=8)
+axs[3,0].set_ylabel('Lithium concentration [$mol*m^{-3}$]', size=8)
 axs[3,0].set_ylim(c5_min-1000, c5_max+1000)
 axs[3,0].yaxis.set_minor_locator(AutoMinorLocator())
 axs[3,0].tick_params(axis='y', labelsize=7)
@@ -274,7 +274,7 @@ axs[3,1].text(0, np.max(err_sim5)+0.01, r'RMSE = {x:=5.3f} $mol*m^{{-3}}$'.forma
 axs[4,0].set_xlabel('Distance from particle centre [$\mu m$]', size=8)
 axs[4,0].xaxis.set_minor_locator(AutoMinorLocator())
 axs[4,0].tick_params(axis='x', labelsize=7)
-axs[4,0].set_ylabel('Lithium concentration $mol*m^{-3}$', size=8)
+axs[4,0].set_ylabel('Lithium concentration [$mol*m^{-3}$]', size=8)
 axs[4,0].set_ylim(c3_min-2000, c3_max+10)
 axs[4,0].yaxis.set_minor_locator(AutoMinorLocator())
 axs[4,0].tick_params(axis='y', labelsize=7)
@@ -308,7 +308,7 @@ for i in range (c_dis025.shape[0]):
         c_dis025[i,j] = c_dis025_all[i,j*4]
 c_dis025[:,-1] = c_dis025_all[:,-1]
 rmse_dis025 = np.sqrt(np.sum((c_dis025-cp1)**2)/cp1.size).astype(float)
-print(rmse_dis025)
+print('The root mean square error with dt=0.25 is {x:=5.3f} [mol.m-3]'.format(x=rmse_dis025))
 
 c_dis05_all = SP_dis05['conc'][:].T
 c_dis05 = np.zeros_like(cp1)
@@ -317,10 +317,10 @@ for i in range (c_dis05.shape[0]):
         c_dis05[i,j] = c_dis05_all[i,j*2]
 c_dis05[:,-1] = c_dis05_all[:,-1]
 rmse_dis05 = np.sqrt(np.sum((c_dis05-cp1)**2)/cp1.size).astype(float)
-print(rmse_dis05)
+print('The root mean square error with dt=0.5 is {x:=5.3f} [$mol*m^{{-3}}$]'.format(x=rmse_dis05))
 
 rmse_dis1 = np.sqrt(np.sum((cs1-cp1)**2)/cp1.size).astype(float)
-print(rmse_dis1)
+print('The root mean square error with dt=1 is {x:=5.3f} [mol.m-3]'.format(x=rmse_dis1))
 
 c_dis2 = SP_dis2['conc'][:].T
 cp1_dis2 = np.zeros_like(c_dis2)
@@ -329,7 +329,7 @@ for i in range (cp1_dis2.shape[0]):
         cp1_dis2[i,j] = cp1[i,j*2]
 cp1_dis2[:,-1] = cp1[:,-1]
 rmse_dis2 = np.sqrt(np.sum((c_dis2-cp1_dis2)**2)/cp1_dis2.size).astype(float)
-print(rmse_dis2)
+print('The root mean square error with dt=2 is {x:=5.3f} [mol.m-3]'.format(x=rmse_dis2))
 
 c_dis4 = SP_dis4['conc'][:].T
 cp1_dis4 = np.zeros_like(c_dis4)
@@ -338,7 +338,7 @@ for i in range (cp1_dis4.shape[0]):
         cp1_dis4[i,j] = cp1[i,j*4]
 cp1_dis4[:,-1] = cp1[:,-1]
 rmse_dis4 = np.sqrt(np.sum((c_dis4-cp1_dis4)**2)/cp1_dis4.size).astype(float)
-print(rmse_dis4)
+print('The root mean square error with dt=4 is {x:=5.3f} [mol.m-3]'.format(x=rmse_dis4))
 
 c_dis8 = SP_dis8['conc'][:].T
 cp1_dis8 = np.zeros_like(c_dis8)
@@ -347,15 +347,24 @@ for i in range (cp1_dis8.shape[0]):
         cp1_dis8[i,j] = cp1[i,j*8]
 cp1_dis8[:,-1] = cp1[:,-1]
 rmse_dis8 = np.sqrt(np.sum((c_dis8-cp1_dis8)**2)/cp1_dis8.size).astype(float)
-print(rmse_dis8)
+print('The root mean square error with dt=8 is {x:=5.3f} [mol.m-3]'.format(x=rmse_dis8))
 
 x = np.array([0.25, 0.5, 1.0, 2.0, 4.0 ,8.0])
 y = np.array([rmse_dis025, rmse_dis05, rmse_dis1, rmse_dis2, rmse_dis4, rmse_dis8])
 
 figure, ax = plt.subplots()
 ax.plot(x,y)
-
-plt.tight_layout()
+ax.set_xlabel('Time step [s]', size=8)
+ax.xaxis.set_minor_locator(AutoMinorLocator())
+ax.tick_params(axis='x', labelsize=7)
+ax.set_ylabel('Root mean square error mol*m^{{-3}}$]', size=8)
+ax.set_ylim(np.min(y)-1, np.max(y)+1)
+ax.yaxis.set_minor_locator(AutoMinorLocator())
+ax.tick_params(axis='y', labelsize=7)
+ax.ticklabel_format(axis='both', style="sci", useMathText=True)
+ax.xaxis.offsetText.set_fontsize(7)
+ax.yaxis.offsetText.set_fontsize(7)
+ax.set_title('Convergence of RMSE with time step', size=10, pad=15.0)
 plt.show()
 
 SP_sim1.close()
